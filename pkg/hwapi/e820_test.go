@@ -1,23 +1,26 @@
 package hwapi
 
 import (
+	"os"
 	"testing"
 )
 
 func TestE820ReservedCheck(t *testing.T) {
-	t.Skip()
+	h := GetAPI()
+	if os.Getenv("RUN_IN_QEMU") != "TRUE" {
+		t.Skip("Not running on QEMU")
+	}
+
 	ranges := []struct {
 		start uint64
 		end   uint64
 	}{
-		{0, 0x10},
-		{0x8c000, 0x8ffff},
-		{0x7bef5000, 0x7bef5010},
+		{0xf0000, 0xfffff},
+		{0xfffc0000, 0xffffffff},
 	}
-	txtAPI := GetAPI()
 
 	for _, s := range ranges {
-		reserved, err := txtAPI.IsReservedInE820(s.start, s.end)
+		reserved, err := h.IsReservedInE820(s.start, s.end)
 		if err != nil {
 			t.Errorf("Checking range %x-%x failed: %s", s.start, s.end, err)
 		}

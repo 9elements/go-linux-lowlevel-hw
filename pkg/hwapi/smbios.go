@@ -37,7 +37,7 @@ type SMBIOSType0 struct {
 	smbiosHeader
 	Vendor                       string
 	BIOSVersion                  string
-	BIOSStartingAddress          uint16
+	BIOSStartingAddress          int
 	BIOSReleaseDate              string
 	BIOSSize                     int
 	BiosCharacteristics          uint32
@@ -105,7 +105,7 @@ func (h HwApi) IterateOverSMBIOSTablesType0(callback func(t0 *SMBIOSType0) bool)
 		if int(raw.BIOSVersion-1) < len(s.Strings) {
 			decoded.BIOSVersion = s.Strings[raw.BIOSVersion-1]
 		}
-		decoded.BIOSStartingAddress = raw.BIOSStartingAddress
+		decoded.BIOSStartingAddress = int(raw.BIOSStartingAddress) * 16
 		if int(raw.BIOSReleaseDate-1) < len(s.Strings) {
 			decoded.BIOSReleaseDate = s.Strings[raw.BIOSReleaseDate-1]
 		}

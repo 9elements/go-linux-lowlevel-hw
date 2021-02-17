@@ -1,15 +1,47 @@
 package hwapi
 
 import (
+	"os"
 	"testing"
 )
+
+const (
+	MsrFsbFreq      = 0x000000cd
+	MsrPlatformInfo = 0x000000ce
+)
+
+type msrs struct {
+	msr int64
+	val uint64
+}
+
+func TestReadMSR(t *testing.T) {
+	h := GetAPI()
+	if os.Getenv("RUN_IN_QEMU") != "TRUE" {
+		t.Skip("Not running on QEMU")
+	}
+	tests := []msrs{
+		{MsrFsbFreq, 3},
+		{MsrPlatformInfo, 0x80000000},
+	}
+
+	for _, test := range tests {
+		val, err := h.ReadMSR(test.msr)
+		if err != nil {
+			t.Errorf("ReadMSR failed with %v", err)
+		}
+		if val != test.val {
+			t.Errorf("MsrFsbFreq unexpected value %v", val)
+		}
+	}
+}
 
 func TestSMRR(t *testing.T) {
 	t.Skip()
 
-	txtAPI := GetAPI()
+	h := GetAPI()
 
-	has, err := txtAPI.HasSMRR()
+	has, err := h.HasSMRR()
 	if err != nil {
 		t.Errorf("HasSMRR() failed: %v", err)
 	}
@@ -17,7 +49,7 @@ func TestSMRR(t *testing.T) {
 	if has {
 		t.Log("System has SMRR")
 
-		got, err := txtAPI.GetSMRRInfo()
+		got, err := h.GetSMRRInfo()
 
 		if err != nil {
 			t.Errorf("GetSMRRInfo() failed: %v", err)

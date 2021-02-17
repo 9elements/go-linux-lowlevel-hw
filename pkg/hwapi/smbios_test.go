@@ -16,10 +16,17 @@ func TestSMBIOSQemu(t *testing.T) {
 		if s.Type != 0 {
 			t.Errorf("Got unexpected type %d", s.Type)
 		}
-		if s.Vendor != "Emulation" {
+		if s.Vendor != "SeaBIOS" {
 			t.Errorf("Got unexpected vendor %s", s.Vendor)
-			t.Errorf("%+v", s)
-
+		}
+		if s.SystemBiosMajor != 0 {
+			t.Errorf("Got unexpected bios version %d", s.SystemBiosMajor)
+		}
+		if s.BIOSStartingAddress != 0xe8000 {
+			t.Errorf("Got unexpected starting address %x", s.BIOSStartingAddress)
+		}
+		if s.BIOSSize != 0x10000 {
+			t.Errorf("Got unexpected bios size %x", s.BIOSSize)
 		}
 		return false
 	})

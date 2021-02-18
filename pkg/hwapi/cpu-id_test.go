@@ -13,13 +13,12 @@ func TestVersionStringQemu(t *testing.T) {
 	}
 
 	got := h.VersionString()
-	if got != "GenuineIntel" {
+	if got != "GenuineIntel" && got != "AuthenticAMD" {
 		t.Errorf("Got unexpected version string %s", got)
 	}
 	got = h.ProcessorBrandName()
 	if got != "QEMU Virtual CPU version 2.5+" {
 		t.Errorf("Got unexpected brand name string %s", got)
-
 	}
 }
 

@@ -23,6 +23,7 @@ type LowLevelHardwareInterfaces interface {
 
 	// msr.go
 	ReadMSR(msr int64) (uint64, error)
+	ReadMSRAllCores(msr int64) (uint64, error)
 
 	// msr_intel.go
 	HasSMRR() (bool, error)

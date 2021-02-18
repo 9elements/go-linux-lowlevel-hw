@@ -8,11 +8,24 @@ import (
 )
 
 func (h HwApi) ReadMSR(msr int64) (uint64, error) {
+	msrCtx, err := gomsr.MSR(0)
+	if err != nil {
+		return 0, err
+	}
+	msrData, err := msrCtx.Read(msr)
+	if err != nil {
+		return 0, err
+	}
+
+	return msrData, nil
+}
+
+func (h HwApi) ReadMSRAllCores(msr int64) (uint64, error) {
 	var data uint64
 	for i := 0; i < runtime.NumCPU(); i++ {
 		msrCtx, err := gomsr.MSR(i)
 		if err != nil {
-			return 0, fmt.Errorf("MSR: Selected core %d doesn't exist", i)
+			return 0, err
 		}
 		msrData, err := msrCtx.Read(msr)
 		if err != nil {

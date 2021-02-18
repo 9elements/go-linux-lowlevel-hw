@@ -7,11 +7,24 @@ import (
 	"os"
 )
 
+// PCIDevice represents a PCI device
+type PCIDevice struct {
+	Bus      int
+	Device   int
+	Function int
+	// True if device is hidden
+	Hidden bool
+	// BARs currently decoded by the device
+	BAR map[int]uint64
+	// ROM BAR currently decoded by the device
+	ROM uint64
+}
+
 //PCIReadConfigSpace reads from PCI config space into buf
-func (h HwApi) PCIReadConfigSpace(bus int, device int, devFn int, off int, buf interface{}) (err error) {
+func (h HwApi) PCIReadConfigSpace(d PCIDevice, off int, buf interface{}) (err error) {
 	var path string
 	var f *os.File
-	path = fmt.Sprintf("/sys/bus/pci/devices/0000:%02x:%02x.%1x/config", bus, device, devFn)
+	path = fmt.Sprintf("/sys/bus/pci/devices/0000:%02x:%02x.%1x/config", d.Bus, d.Device, d.Function)
 
 	f, err = os.OpenFile(path, os.O_RDONLY, 0)
 	if err != nil {
@@ -29,48 +42,48 @@ func (h HwApi) PCIReadConfigSpace(bus int, device int, devFn int, off int, buf i
 }
 
 //PCIReadConfig8 reads 8bits from PCI config space
-func (h HwApi) PCIReadConfig8(bus int, device int, devFn int, off int) (reg8 uint8, err error) {
+func (h HwApi) PCIReadConfig8(d PCIDevice, off int) (reg8 uint8, err error) {
 
-	err = h.PCIReadConfigSpace(bus, device, devFn, off, &reg8)
+	err = h.PCIReadConfigSpace(d, off, &reg8)
 
 	return
 }
 
 //PCIReadConfig16 reads 16bits from PCI config space
-func (h HwApi) PCIReadConfig16(bus int, device int, devFn int, off int) (reg16 uint16, err error) {
+func (h HwApi) PCIReadConfig16(d PCIDevice, off int) (reg16 uint16, err error) {
 
-	err = h.PCIReadConfigSpace(bus, device, devFn, off, &reg16)
+	err = h.PCIReadConfigSpace(d, off, &reg16)
 
 	return
 }
 
 //PCIReadConfig32 reads 32bits from PCI config space
-func (h HwApi) PCIReadConfig32(bus int, device int, devFn int, off int) (reg32 uint32, err error) {
+func (h HwApi) PCIReadConfig32(d PCIDevice, off int) (reg32 uint32, err error) {
 
-	err = h.PCIReadConfigSpace(bus, device, devFn, off, &reg32)
+	err = h.PCIReadConfigSpace(d, off, &reg32)
 
 	return
 }
 
 //PCIReadVendorID reads the device vendor ID from PCI config space
-func (h HwApi) PCIReadVendorID(bus int, device int, devFn int) (id uint16, err error) {
-	id, err = h.PCIReadConfig16(bus, device, devFn, 0)
+func (h HwApi) PCIReadVendorID(d PCIDevice) (id uint16, err error) {
+	id, err = h.PCIReadConfig16(d, 0)
 
 	return
 }
 
 //PCIReadDeviceID reads the device ID from PCI config space
-func (h HwApi) PCIReadDeviceID(bus int, device int, devFn int) (id uint16, err error) {
-	id, err = h.PCIReadConfig16(bus, device, devFn, 2)
+func (h HwApi) PCIReadDeviceID(d PCIDevice) (id uint16, err error) {
+	id, err = h.PCIReadConfig16(d, 2)
 
 	return
 }
 
 //PCIWriteConfigSpace writes to PCI config space from buf
-func (h HwApi) PCIWriteConfigSpace(bus int, device int, devFn int, off int, buf interface{}) (err error) {
+func (h HwApi) PCIWriteConfigSpace(d PCIDevice, off int, buf interface{}) (err error) {
 	var path string
 	var f *os.File
-	path = fmt.Sprintf("/sys/bus/pci/devices/0000:%02x:%02x.%1x/config", bus, device, devFn)
+	path = fmt.Sprintf("/sys/bus/pci/devices/0000:%02x:%02x.%1x/config", d.Bus, d.Device, d.Function)
 
 	f, err = os.OpenFile(path, os.O_WRONLY, 0)
 	if err != nil {
@@ -88,25 +101,25 @@ func (h HwApi) PCIWriteConfigSpace(bus int, device int, devFn int, off int, buf 
 }
 
 //PCIWriteConfig8 writes 8bits to PCI config space
-func (h HwApi) PCIWriteConfig8(bus int, device int, devFn int, off int, val uint8) (err error) {
+func (h HwApi) PCIWriteConfig8(d PCIDevice, off int, val uint8) (err error) {
 
-	err = h.PCIWriteConfigSpace(bus, device, devFn, off, val)
+	err = h.PCIWriteConfigSpace(d, off, val)
 
 	return
 }
 
 //PCIWriteConfig16 writes 16bits to PCI config space
-func (h HwApi) PCIWriteConfig16(bus int, device int, devFn int, off int, val uint16) (err error) {
+func (h HwApi) PCIWriteConfig16(d PCIDevice, off int, val uint16) (err error) {
 
-	err = h.PCIWriteConfigSpace(bus, device, devFn, off, val)
+	err = h.PCIWriteConfigSpace(d, off, val)
 
 	return
 }
 
 //PCIWriteConfig32 writes 32bits to PCI config space
-func (h HwApi) PCIWriteConfig32(bus int, device int, devFn int, off int, val uint32) (err error) {
+func (h HwApi) PCIWriteConfig32(d PCIDevice, off int, val uint32) (err error) {
 
-	err = h.PCIWriteConfigSpace(bus, device, devFn, off, val)
+	err = h.PCIWriteConfigSpace(d, off, val)
 
 	return
 }

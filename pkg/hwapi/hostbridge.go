@@ -95,6 +95,12 @@ var (
 		0x9B54,
 		0x9B44,
 	}
+
+	pciHostbridge = PCIDevice{
+		Bus:      0,
+		Device:   0,
+		Function: 0,
+	}
 )
 
 //ReadHostBridgeTseg returns TSEG base and TSEG limit
@@ -104,14 +110,14 @@ func (h HwApi) ReadHostBridgeTseg() (uint32, uint32, error) {
 	var tsegBroadwellDEfix bool
 	var devicenum int
 
-	vendorid, err := h.PCIReadVendorID(0, 0, 0)
+	vendorid, err := h.PCIReadVendorID(pciHostbridge)
 	if err != nil {
 		return 0, 0, err
 	}
 	if vendorid != 0x8086 {
 		return 0, 0, fmt.Errorf("Hostbridge is not made by Intel")
 	}
-	deviceid, err := h.PCIReadDeviceID(0, 0, 0)
+	deviceid, err := h.PCIReadDeviceID(pciHostbridge)
 
 	var found bool
 	for _, id := range HostbridgeIDsSandyCompatible {
@@ -140,15 +146,21 @@ func (h HwApi) ReadHostBridgeTseg() (uint32, uint32, error) {
 		return 0, 0, fmt.Errorf("Hostbridge is unsupported")
 	}
 
+	tsegDev := PCIDevice{
+		Bus:      0,
+		Device:   devicenum,
+		Function: 0,
+	}
+
 	var tsegbase uint32
 	var tseglimit uint32
 
-	tsegbase, err = h.PCIReadConfig32(0, devicenum, 0, tsegBaseOff)
+	tsegbase, err = h.PCIReadConfig32(tsegDev, tsegBaseOff)
 	if err != nil {
 		return 0, 0, err
 	}
 
-	tseglimit, err = h.PCIReadConfig32(0, devicenum, 0, tsegLimitOff)
+	tseglimit, err = h.PCIReadConfig32(tsegDev, tsegLimitOff)
 	if err != nil {
 		return 0, 0, err
 	}
@@ -176,14 +188,14 @@ func (h HwApi) ReadHostBridgeDPR() (DMAProtectedRange, error) {
 	var devicenum int
 	var ret DMAProtectedRange
 
-	vendorid, err := h.PCIReadVendorID(0, 0, 0)
+	vendorid, err := h.PCIReadVendorID(pciHostbridge)
 	if err != nil {
 		return ret, err
 	}
 	if vendorid != 0x8086 {
 		return ret, fmt.Errorf("Hostbridge is not made by Intel")
 	}
-	deviceid, err := h.PCIReadDeviceID(0, 0, 0)
+	deviceid, err := h.PCIReadDeviceID(pciHostbridge)
 
 	var found bool
 	for _, id := range HostbridgeIDsSandyCompatible {
@@ -209,9 +221,15 @@ func (h HwApi) ReadHostBridgeDPR() (DMAProtectedRange, error) {
 		return ret, fmt.Errorf("Hostbridge is unsupported")
 	}
 
+	tsegDev := PCIDevice{
+		Bus:      0,
+		Device:   devicenum,
+		Function: 0,
+	}
+
 	var u32 uint32
 
-	u32, err = h.PCIReadConfig32(0, devicenum, 0, dprOff)
+	u32, err = h.PCIReadConfig32(tsegDev, dprOff)
 	if err != nil {
 		return ret, err
 	}

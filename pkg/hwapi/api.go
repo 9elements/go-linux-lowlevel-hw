@@ -35,16 +35,16 @@ type LowLevelHardwareInterfaces interface {
 	IA32DebugInterfaceEnabledOrLocked() (*IA32Debug, error)
 
 	// pci.go
-	PCIReadConfigSpace(bus int, device int, devFn int, off int, buf interface{}) error
-	PCIWriteConfigSpace(bus int, device int, devFn int, off int, buf interface{}) error
-	PCIReadConfig8(bus int, device int, devFn int, off int) (uint8, error)
-	PCIReadConfig16(bus int, device int, devFn int, off int) (uint16, error)
-	PCIReadConfig32(bus int, device int, devFn int, off int) (uint32, error)
-	PCIWriteConfig8(bus int, device int, devFn int, off int, val uint8) error
-	PCIWriteConfig16(bus int, device int, devFn int, off int, val uint16) error
-	PCIWriteConfig32(bus int, device int, devFn int, off int, val uint32) error
-	PCIReadVendorID(bus int, device int, devFn int) (uint16, error)
-	PCIReadDeviceID(bus int, device int, devFn int) (uint16, error)
+	PCIReadConfigSpace(d PCIDevice, off int, buf interface{}) (err error)
+	PCIWriteConfigSpace(d PCIDevice, off int, buf interface{}) (err error)
+	PCIReadConfig8(d PCIDevice, off int) (uint8, error)
+	PCIReadConfig16(d PCIDevice, off int) (uint16, error)
+	PCIReadConfig32(d PCIDevice, off int) (uint32, error)
+	PCIWriteConfig8(d PCIDevice, off int, val uint8) error
+	PCIWriteConfig16(d PCIDevice, off int, val uint16) error
+	PCIWriteConfig32(d PCIDevice, off int, val uint32) error
+	PCIReadVendorID(d PCIDevice) (uint16, error)
+	PCIReadDeviceID(d PCIDevice) (uint16, error)
 
 	// hostbridge.go
 	ReadHostBridgeTseg() (uint32, uint32, error)

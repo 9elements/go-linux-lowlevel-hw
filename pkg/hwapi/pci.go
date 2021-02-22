@@ -20,8 +20,8 @@ type PCIDevice struct {
 	ROM uint64
 }
 
-//PCIReadConfigSpace reads from PCI config space into buf
-func (h HwApi) PCIReadConfigSpace(d PCIDevice, off int, buf interface{}) (err error) {
+//pciReadConfigSpace reads from PCI config space into buf
+func (h HwApi) pciReadConfigSpace(d PCIDevice, off int, buf interface{}) (err error) {
 	var path string
 	var f *os.File
 	path = fmt.Sprintf("/sys/bus/pci/devices/0000:%02x:%02x.%1x/config", d.Bus, d.Device, d.Function)
@@ -44,7 +44,7 @@ func (h HwApi) PCIReadConfigSpace(d PCIDevice, off int, buf interface{}) (err er
 //PCIReadConfig8 reads 8bits from PCI config space
 func (h HwApi) PCIReadConfig8(d PCIDevice, off int) (reg8 uint8, err error) {
 
-	err = h.PCIReadConfigSpace(d, off, &reg8)
+	err = h.pciReadConfigSpace(d, off, &reg8)
 
 	return
 }
@@ -52,7 +52,7 @@ func (h HwApi) PCIReadConfig8(d PCIDevice, off int) (reg8 uint8, err error) {
 //PCIReadConfig16 reads 16bits from PCI config space
 func (h HwApi) PCIReadConfig16(d PCIDevice, off int) (reg16 uint16, err error) {
 
-	err = h.PCIReadConfigSpace(d, off, &reg16)
+	err = h.pciReadConfigSpace(d, off, &reg16)
 
 	return
 }
@@ -60,7 +60,7 @@ func (h HwApi) PCIReadConfig16(d PCIDevice, off int) (reg16 uint16, err error) {
 //PCIReadConfig32 reads 32bits from PCI config space
 func (h HwApi) PCIReadConfig32(d PCIDevice, off int) (reg32 uint32, err error) {
 
-	err = h.PCIReadConfigSpace(d, off, &reg32)
+	err = h.pciReadConfigSpace(d, off, &reg32)
 
 	return
 }
@@ -79,8 +79,8 @@ func (h HwApi) PCIReadDeviceID(d PCIDevice) (id uint16, err error) {
 	return
 }
 
-//PCIWriteConfigSpace writes to PCI config space from buf
-func (h HwApi) PCIWriteConfigSpace(d PCIDevice, off int, buf interface{}) (err error) {
+//pciWriteConfigSpace writes to PCI config space from buf
+func (h HwApi) pciWriteConfigSpace(d PCIDevice, off int, buf interface{}) (err error) {
 	var path string
 	var f *os.File
 	path = fmt.Sprintf("/sys/bus/pci/devices/0000:%02x:%02x.%1x/config", d.Bus, d.Device, d.Function)
@@ -103,7 +103,7 @@ func (h HwApi) PCIWriteConfigSpace(d PCIDevice, off int, buf interface{}) (err e
 //PCIWriteConfig8 writes 8bits to PCI config space
 func (h HwApi) PCIWriteConfig8(d PCIDevice, off int, val uint8) (err error) {
 
-	err = h.PCIWriteConfigSpace(d, off, val)
+	err = h.pciWriteConfigSpace(d, off, val)
 
 	return
 }
@@ -111,7 +111,7 @@ func (h HwApi) PCIWriteConfig8(d PCIDevice, off int, val uint8) (err error) {
 //PCIWriteConfig16 writes 16bits to PCI config space
 func (h HwApi) PCIWriteConfig16(d PCIDevice, off int, val uint16) (err error) {
 
-	err = h.PCIWriteConfigSpace(d, off, val)
+	err = h.pciWriteConfigSpace(d, off, val)
 
 	return
 }
@@ -119,7 +119,7 @@ func (h HwApi) PCIWriteConfig16(d PCIDevice, off int, val uint16) (err error) {
 //PCIWriteConfig32 writes 32bits to PCI config space
 func (h HwApi) PCIWriteConfig32(d PCIDevice, off int, val uint32) (err error) {
 
-	err = h.PCIWriteConfigSpace(d, off, val)
+	err = h.pciWriteConfigSpace(d, off, val)
 
 	return
 }

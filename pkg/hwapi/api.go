@@ -35,8 +35,6 @@ type LowLevelHardwareInterfaces interface {
 	IA32DebugInterfaceEnabledOrLocked() (*IA32Debug, error)
 
 	// pci.go
-	PCIReadConfigSpace(d PCIDevice, off int, buf interface{}) (err error)
-	PCIWriteConfigSpace(d PCIDevice, off int, buf interface{}) (err error)
 	PCIReadConfig8(d PCIDevice, off int) (uint8, error)
 	PCIReadConfig16(d PCIDevice, off int) (uint16, error)
 	PCIReadConfig32(d PCIDevice, off int) (uint32, error)

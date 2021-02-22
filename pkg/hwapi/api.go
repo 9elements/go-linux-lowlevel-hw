@@ -35,6 +35,7 @@ type LowLevelHardwareInterfaces interface {
 	IA32DebugInterfaceEnabledOrLocked() (*IA32Debug, error)
 
 	// pci.go
+	PCIEnumerateVisibleDevices(cb func(d PCIDevice) (abort bool)) (err error)
 	PCIReadConfig8(d PCIDevice, off int) (uint8, error)
 	PCIReadConfig16(d PCIDevice, off int) (uint16, error)
 	PCIReadConfig32(d PCIDevice, off int) (uint32, error)

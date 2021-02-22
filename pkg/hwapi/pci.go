@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
+	"strings"
 )
 
 // PCIDevice represents a PCI device
@@ -18,6 +20,38 @@ type PCIDevice struct {
 	BAR map[int]uint64
 	// ROM BAR currently decoded by the device
 	ROM uint64
+}
+
+// PCIEnumerateVisibleDevices enumerates all visible PCI devices
+func (h HwApi) PCIEnumerateVisibleDevices(cb func(d PCIDevice) (abort bool)) (err error) {
+	dir := "/sys/bus/pci/devices/"
+	err = filepath.Walk(dir, func(path string, info os.FileInfo, interr error) error {
+		if interr != nil || path == dir {
+			return nil
+		}
+		if strings.HasPrefix(path, dir) {
+			path = strings.Replace(path, dir, "", 1)
+		}
+		if strings.HasPrefix(info.Mode().String(), "L") {
+			domain := 0
+			bus := 0
+			device := 0
+			function := 0
+			_, err = fmt.Sscanf(path, "%4x:%2x:%2x.%1x", &domain, &bus, &device, &function)
+			if err != nil {
+				return err
+			}
+			d := PCIDevice{Bus: bus,
+				Device:   device,
+				Function: function}
+
+			if cb(d) {
+				return filepath.SkipDir
+			}
+		}
+		return nil
+	})
+	return
 }
 
 //pciReadConfigSpace reads from PCI config space into buf

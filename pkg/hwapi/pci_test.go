@@ -253,3 +253,43 @@ func TestPCIBusMaster2QEMU(t *testing.T) {
 		t.Errorf("PCIWriteConfig16 failed. Register content is unchanged.")
 	}
 }
+
+func TestPCIEnum2QEMU(t *testing.T) {
+	h := GetAPI()
+	if os.Getenv("RUN_IN_QEMU") != "TRUE" {
+		t.Skip("Not running on QEMU")
+	}
+
+	l := []PCIDevice{}
+
+	err := h.PCIEnumerateVisibleDevices(func(d PCIDevice) (abort bool) {
+		l = append(l, d)
+		return false
+	})
+	if err != nil {
+		t.Errorf("PCIEnumerateVisibleDevices failed with error %v", err)
+	}
+	reference := []PCIDevice{
+		{Bus: 0, Device: 0, Function: 0},
+		{Bus: 0, Device: 1, Function: 0},
+		{Bus: 0, Device: 2, Function: 0},
+		{Bus: 0, Device: 0x1f, Function: 0},
+		{Bus: 0, Device: 0x1f, Function: 2},
+		{Bus: 0, Device: 0x1f, Function: 3},
+	}
+
+	for _, r := range reference {
+		found := false
+		for i := range l {
+			if l[i].Device == r.Device &&
+				l[i].Function == r.Function &&
+				l[i].Bus == r.Bus {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("PCI device %v is missing", r)
+		}
+	}
+}

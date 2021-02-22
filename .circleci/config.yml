@@ -1,0 +1,32 @@
+# Golang CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-go/ for more details
+version: 2
+jobs:
+  build:
+    docker:
+      # specify the version
+      - image: circleci/golang:1.13
+
+    working_directory: /go/src/github.com/9elements/go-linux-lowlevel-hw
+    steps:
+      - checkout
+      - run: sudo apt install -y golint
+      # specify any bash command here prefixed with `run: `
+      - run: if [ "$(gofmt -l .)" != "" ]; then exit 1; fi
+      - run: golint -set_exit_status ./pkg/hwapi
+      - run: go mod download
+      - run: go mod verify
+      - run: go test ./pkg/hwapi/
+
+
+workflows:
+  version: 2
+  main:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              only: /.*/

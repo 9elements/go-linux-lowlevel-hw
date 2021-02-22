@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/fearful-symmetry/gomsr"
 	"github.com/intel-go/cpuid"
 )
 
@@ -20,7 +21,6 @@ const (
 type msrs struct {
 	name string
 	msr  int64
-	val  uint64
 }
 
 func TestReadMSR(t *testing.T) {
@@ -28,10 +28,15 @@ func TestReadMSR(t *testing.T) {
 	if os.Getenv("RUN_IN_QEMU") != "TRUE" {
 		t.Skip("Not running on QEMU")
 	}
+	_, err := gomsr.MSR(0)
+	if err != nil {
+		t.Skip("Not enough permissions to do test")
+	}
+
 	tests := []msrs{
-		{"IA32_TIME_STAMP_COUNTER", MsrFsbFreq, 3},
-		{"MSR_PLATFORM_INFO", MsrPlatformInfo, 0x80000000},
-		{"IA32_PLATFORM_ID", MsrPlatformID, 0},
+		{"MSR_FSB_FREQ", MsrFsbFreq},
+		{"MSR_PLATFORM_INFO", MsrPlatformInfo},
+		{"IA32_PLATFORM_ID", MsrPlatformID},
 	}
 
 	for _, test := range tests {
@@ -39,7 +44,7 @@ func TestReadMSR(t *testing.T) {
 		if err != nil {
 			t.Errorf("ReadMSR for MSR %s failed with %v", test.name, err)
 		}
-		if val != test.val {
+		if val == 0 || val == 0xffffffffffffffff {
 			t.Errorf("ReadMSR got unexpected value for MSR %s %v", test.name, val)
 		}
 	}
@@ -47,6 +52,10 @@ func TestReadMSR(t *testing.T) {
 
 func TestReadMSRTimeStampCounter(t *testing.T) {
 	h := GetAPI()
+	_, err := gomsr.MSR(0)
+	if err != nil {
+		t.Skip("Not enough permissions to do test")
+	}
 	if runtime.GOARCH == "amd64" && cpuid.HasFeature(cpuid.TSC) {
 		timestamp1, err := h.ReadMSR(TimeStampCounter)
 		if err != nil {
@@ -71,6 +80,10 @@ func TestReadMSRTimeStampCounter(t *testing.T) {
 
 func TestReadMSREFER(t *testing.T) {
 	h := GetAPI()
+	_, err := gomsr.MSR(0)
+	if err != nil {
+		t.Skip("Not enough permissions to do test")
+	}
 	if runtime.GOARCH == "amd64" {
 		ia32efer, err := h.ReadMSRAllCores(Ia32Efer)
 		if err != nil {
@@ -86,6 +99,11 @@ func TestReadMSREFER(t *testing.T) {
 func TestSMRR(t *testing.T) {
 
 	h := GetAPI()
+
+	_, err := gomsr.MSR(0)
+	if err != nil {
+		t.Skip("Not enough permissions to do test")
+	}
 
 	has, err := h.HasSMRR()
 	if err != nil {

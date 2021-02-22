@@ -104,7 +104,7 @@ func TestPCIQemu(t *testing.T) {
 	if err != nil {
 		t.Errorf("PCIReadConfig failed with error %v", err)
 	}
-	if reg32 != 0xfebd4000 {
+	if reg32 == 0 || reg32 == 0xffffffff {
 		t.Errorf("Unexpected value: %x", reg32)
 	}
 

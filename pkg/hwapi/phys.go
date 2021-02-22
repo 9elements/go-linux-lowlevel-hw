@@ -155,7 +155,7 @@ func selectDevMem() (string, error) {
 
 // ReadPhys reads data from physical memory at address addr. On x86 platforms,
 // this uses the seek+read syscalls.
-func (h HwApi) ReadPhys(addr int64, data UintN) error {
+func (h HwAPI) ReadPhys(addr int64, data UintN) error {
 	devMem, err := selectDevMem()
 	if err != nil {
 		return err
@@ -166,7 +166,7 @@ func (h HwApi) ReadPhys(addr int64, data UintN) error {
 
 // ReadPhysBuf reads data from physical memory at address addr. On x86 platforms,
 // this uses the seek+read syscalls.
-func (h HwApi) ReadPhysBuf(addr int64, buf []byte) error {
+func (h HwAPI) ReadPhysBuf(addr int64, buf []byte) error {
 	devMem, err := selectDevMem()
 	if err != nil {
 		return err
@@ -199,7 +199,7 @@ func pathWrite(path string, addr int64, data UintN) error {
 
 // WritePhys writes data to physical memory at address addr. On x86 platforms, this
 // uses the seek+read syscalls.
-func (h HwApi) WritePhys(addr int64, data UintN) error {
+func (h HwAPI) WritePhys(addr int64, data UintN) error {
 	devMem, err := selectDevMem()
 	if err != nil {
 		return err

@@ -66,7 +66,7 @@ func IterateOverE820Ranges(t string, callback func(start uint64, end uint64) boo
 //IsReservedInE820 reads the e820 table exported via /sys/firmware/memmap and checks whether
 // the range [start; end] is marked as reserved. Returns true if it is reserved,
 // false if not.
-func (h HwApi) IsReservedInE820(start uint64, end uint64) (bool, error) {
+func (h HwAPI) IsReservedInE820(start uint64, end uint64) (bool, error) {
 	if start > end {
 		return false, fmt.Errorf("Invalid range")
 	}

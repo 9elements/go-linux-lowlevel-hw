@@ -48,7 +48,8 @@ type SMBIOSType0 struct {
 	EmbeddedControllerMinor      uint8
 }
 
-func (h HwApi) IterateOverSMBIOSTables(n uint8, callback func(s *smbios.Structure) bool) (ret bool, err error) {
+// IterateOverSMBIOSTables calls the callback for every SMBIOS table of specified type
+func (h HwAPI) IterateOverSMBIOSTables(n uint8, callback func(s *smbios.Structure) bool) (ret bool, err error) {
 	// Find SMBIOS data in operating system-specific location.
 	var rc io.ReadCloser
 	rc, _, err = smbios.Stream()
@@ -81,7 +82,7 @@ func (h HwApi) IterateOverSMBIOSTables(n uint8, callback func(s *smbios.Structur
 }
 
 // IterateOverSMBIOSTablesType0 returns all SMBIOS tables of Type0 decoded
-func (h HwApi) IterateOverSMBIOSTablesType0(callback func(t0 *SMBIOSType0) bool) (ret bool, err error) {
+func (h HwAPI) IterateOverSMBIOSTablesType0(callback func(t0 *SMBIOSType0) bool) (ret bool, err error) {
 	var err2 error
 	ret, err = h.IterateOverSMBIOSTables(uint8(0), func(s *smbios.Structure) bool {
 		var decoded SMBIOSType0

@@ -23,7 +23,7 @@ type PCIDevice struct {
 }
 
 // PCIEnumerateVisibleDevices enumerates all visible PCI devices
-func (h HwApi) PCIEnumerateVisibleDevices(cb func(d PCIDevice) (abort bool)) (err error) {
+func (h HwAPI) PCIEnumerateVisibleDevices(cb func(d PCIDevice) (abort bool)) (err error) {
 	dir := "/sys/bus/pci/devices/"
 	err = filepath.Walk(dir, func(path string, info os.FileInfo, interr error) error {
 		if interr != nil || path == dir {
@@ -55,7 +55,7 @@ func (h HwApi) PCIEnumerateVisibleDevices(cb func(d PCIDevice) (abort bool)) (er
 }
 
 //pciReadConfigSpace reads from PCI config space into buf
-func (h HwApi) pciReadConfigSpace(d PCIDevice, off int, buf interface{}) (err error) {
+func (h HwAPI) pciReadConfigSpace(d PCIDevice, off int, buf interface{}) (err error) {
 	var path string
 	var f *os.File
 	path = fmt.Sprintf("/sys/bus/pci/devices/0000:%02x:%02x.%1x/config", d.Bus, d.Device, d.Function)
@@ -76,7 +76,7 @@ func (h HwApi) pciReadConfigSpace(d PCIDevice, off int, buf interface{}) (err er
 }
 
 //PCIReadConfig8 reads 8bits from PCI config space
-func (h HwApi) PCIReadConfig8(d PCIDevice, off int) (reg8 uint8, err error) {
+func (h HwAPI) PCIReadConfig8(d PCIDevice, off int) (reg8 uint8, err error) {
 
 	err = h.pciReadConfigSpace(d, off, &reg8)
 
@@ -84,7 +84,7 @@ func (h HwApi) PCIReadConfig8(d PCIDevice, off int) (reg8 uint8, err error) {
 }
 
 //PCIReadConfig16 reads 16bits from PCI config space
-func (h HwApi) PCIReadConfig16(d PCIDevice, off int) (reg16 uint16, err error) {
+func (h HwAPI) PCIReadConfig16(d PCIDevice, off int) (reg16 uint16, err error) {
 
 	err = h.pciReadConfigSpace(d, off, &reg16)
 
@@ -92,7 +92,7 @@ func (h HwApi) PCIReadConfig16(d PCIDevice, off int) (reg16 uint16, err error) {
 }
 
 //PCIReadConfig32 reads 32bits from PCI config space
-func (h HwApi) PCIReadConfig32(d PCIDevice, off int) (reg32 uint32, err error) {
+func (h HwAPI) PCIReadConfig32(d PCIDevice, off int) (reg32 uint32, err error) {
 
 	err = h.pciReadConfigSpace(d, off, &reg32)
 
@@ -100,21 +100,21 @@ func (h HwApi) PCIReadConfig32(d PCIDevice, off int) (reg32 uint32, err error) {
 }
 
 //PCIReadVendorID reads the device vendor ID from PCI config space
-func (h HwApi) PCIReadVendorID(d PCIDevice) (id uint16, err error) {
+func (h HwAPI) PCIReadVendorID(d PCIDevice) (id uint16, err error) {
 	id, err = h.PCIReadConfig16(d, 0)
 
 	return
 }
 
 //PCIReadDeviceID reads the device ID from PCI config space
-func (h HwApi) PCIReadDeviceID(d PCIDevice) (id uint16, err error) {
+func (h HwAPI) PCIReadDeviceID(d PCIDevice) (id uint16, err error) {
 	id, err = h.PCIReadConfig16(d, 2)
 
 	return
 }
 
 //pciWriteConfigSpace writes to PCI config space from buf
-func (h HwApi) pciWriteConfigSpace(d PCIDevice, off int, buf interface{}) (err error) {
+func (h HwAPI) pciWriteConfigSpace(d PCIDevice, off int, buf interface{}) (err error) {
 	var path string
 	var f *os.File
 	path = fmt.Sprintf("/sys/bus/pci/devices/0000:%02x:%02x.%1x/config", d.Bus, d.Device, d.Function)
@@ -135,7 +135,7 @@ func (h HwApi) pciWriteConfigSpace(d PCIDevice, off int, buf interface{}) (err e
 }
 
 //PCIWriteConfig8 writes 8bits to PCI config space
-func (h HwApi) PCIWriteConfig8(d PCIDevice, off int, val uint8) (err error) {
+func (h HwAPI) PCIWriteConfig8(d PCIDevice, off int, val uint8) (err error) {
 
 	err = h.pciWriteConfigSpace(d, off, val)
 
@@ -143,7 +143,7 @@ func (h HwApi) PCIWriteConfig8(d PCIDevice, off int, val uint8) (err error) {
 }
 
 //PCIWriteConfig16 writes 16bits to PCI config space
-func (h HwApi) PCIWriteConfig16(d PCIDevice, off int, val uint16) (err error) {
+func (h HwAPI) PCIWriteConfig16(d PCIDevice, off int, val uint16) (err error) {
 
 	err = h.pciWriteConfigSpace(d, off, val)
 
@@ -151,7 +151,7 @@ func (h HwApi) PCIWriteConfig16(d PCIDevice, off int, val uint16) (err error) {
 }
 
 //PCIWriteConfig32 writes 32bits to PCI config space
-func (h HwApi) PCIWriteConfig32(d PCIDevice, off int, val uint32) (err error) {
+func (h HwAPI) PCIWriteConfig32(d PCIDevice, off int, val uint32) (err error) {
 
 	err = h.pciWriteConfigSpace(d, off, val)
 

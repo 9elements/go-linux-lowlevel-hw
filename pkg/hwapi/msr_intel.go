@@ -23,7 +23,7 @@ type IA32Debug struct {
 }
 
 //HasSMRR returns true if the CPU supports SMRR
-func (h HwApi) HasSMRR() (bool, error) {
+func (h HwAPI) HasSMRR() (bool, error) {
 	mtrrcap, err := h.ReadMSR(msrMTRRCap)
 	if err != nil {
 		return false, fmt.Errorf("Cannot access MSR IA32_MTRRCAP: %s", err)
@@ -40,7 +40,7 @@ type SMRR struct {
 }
 
 // GetSMRRInfo returns SMRR config of the platform
-func (h HwApi) GetSMRRInfo() (SMRR, error) {
+func (h HwAPI) GetSMRRInfo() (SMRR, error) {
 	var ret SMRR
 
 	smrrPhysbase, err := h.ReadMSR(msrSMRRPhysBase)
@@ -61,7 +61,7 @@ func (h HwApi) GetSMRRInfo() (SMRR, error) {
 }
 
 //IA32FeatureControlIsLocked returns true if the IA32_FEATURE_CONTROL msr is locked
-func (h HwApi) IA32FeatureControlIsLocked() (bool, error) {
+func (h HwAPI) IA32FeatureControlIsLocked() (bool, error) {
 	featCtrl, err := h.ReadMSR(msrFeatureControl)
 	if err != nil {
 		return false, fmt.Errorf("Cannot access MSR IA32_FEATURE_CONTROL: %s", err)
@@ -71,7 +71,7 @@ func (h HwApi) IA32FeatureControlIsLocked() (bool, error) {
 }
 
 //IA32PlatformID returns the IA32_PLATFORM_ID msr
-func (h HwApi) IA32PlatformID() (uint64, error) {
+func (h HwAPI) IA32PlatformID() (uint64, error) {
 	pltID, err := h.ReadMSR(msrPlatformID)
 	if err != nil {
 		return 0, fmt.Errorf("Cannot access MSR IA32_PLATFORM_ID: %s", err)
@@ -81,7 +81,7 @@ func (h HwApi) IA32PlatformID() (uint64, error) {
 }
 
 //AllowsVMXInSMX returns true if VMX is allowed in SMX
-func (h HwApi) AllowsVMXInSMX() (bool, error) {
+func (h HwAPI) AllowsVMXInSMX() (bool, error) {
 	featCtrl, err := h.ReadMSR(msrFeatureControl)
 	if err != nil {
 		return false, fmt.Errorf("Cannot access MSR IA32_FEATURE_CONTROL: %s", err)
@@ -92,7 +92,7 @@ func (h HwApi) AllowsVMXInSMX() (bool, error) {
 }
 
 //TXTLeavesAreEnabled returns true if all TXT leaves are enabled
-func (h HwApi) TXTLeavesAreEnabled() (bool, error) {
+func (h HwAPI) TXTLeavesAreEnabled() (bool, error) {
 	featCtrl, err := h.ReadMSR(msrFeatureControl)
 	if err != nil {
 		return false, fmt.Errorf("Cannot access MSR IA32_FEATURE_CONTROL: %s", err)
@@ -103,7 +103,7 @@ func (h HwApi) TXTLeavesAreEnabled() (bool, error) {
 }
 
 //IA32DebugInterfaceEnabledOrLocked returns the enabled, locked and pchStrap state of IA32_DEBUG_INTERFACE msr
-func (h HwApi) IA32DebugInterfaceEnabledOrLocked() (*IA32Debug, error) {
+func (h HwAPI) IA32DebugInterfaceEnabledOrLocked() (*IA32Debug, error) {
 	var debugMSR IA32Debug
 	debugInterfaceCtrl, err := h.ReadMSR(msrIA32DebugInterface)
 	if err != nil {

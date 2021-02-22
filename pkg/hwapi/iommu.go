@@ -96,7 +96,7 @@ type VTdRegisters struct {
 	Reserved12                              uint64 // Reserved for future expansion of Virtual Command Response Register.
 }
 
-func (h HwApi) readVTdRegs() (VTdRegisters, error) {
+func (h HwAPI) readVTdRegs() (VTdRegisters, error) {
 	var regs VTdRegisters
 
 	dir, err := os.Open("/sys/class/iommu/")
@@ -140,7 +140,7 @@ func (h HwApi) readVTdRegs() (VTdRegisters, error) {
 }
 
 //LookupIOAddress returns the address of the root Tbl
-func (h HwApi) LookupIOAddress(addr uint64, regs VTdRegisters) ([]uint64, error) {
+func (h HwAPI) LookupIOAddress(addr uint64, regs VTdRegisters) ([]uint64, error) {
 	rootTblAddr := regs.RootTableAddress & 0xffffffffffff000
 	ttm := (regs.RootTableAddress >> 10) & 3
 
@@ -153,7 +153,7 @@ func (h HwApi) LookupIOAddress(addr uint64, regs VTdRegisters) ([]uint64, error)
 	}
 }
 
-func (h HwApi) lookupIOLegacy(addr, rootTblAddr uint64) ([]uint64, error) {
+func (h HwAPI) lookupIOLegacy(addr, rootTblAddr uint64) ([]uint64, error) {
 	ret := []uint64{}
 
 	for bus := int64(0); bus < 256; bus++ {
@@ -299,7 +299,7 @@ func lookupIOScalable(addr, rootTblAddr uint64) ([]uint64, error) {
 }
 
 //AddressRangesIsDMAProtected returns true if the address is DMA protected by the IOMMU
-func (h HwApi) AddressRangesIsDMAProtected(first, end uint64) (bool, error) {
+func (h HwAPI) AddressRangesIsDMAProtected(first, end uint64) (bool, error) {
 	regs, err := h.readVTdRegs()
 	if err != nil {
 		return false, err

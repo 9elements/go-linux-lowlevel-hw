@@ -8,38 +8,38 @@ import "github.com/intel-go/cpuid"
 func cpuidLow(arg1, arg2 uint32) (eax, ebx, ecx, edx uint32) // implemented in cpuidlow_amd64.s
 
 //VersionString returns the vendor ID
-func (h HwApi) VersionString() string {
+func (h HwAPI) VersionString() string {
 	return cpuid.VendorIdentificatorString
 }
 
 //HasSMX returns true if SMX is supported
-func (h HwApi) HasSMX() bool {
+func (h HwAPI) HasSMX() bool {
 	return cpuid.HasFeature(cpuid.SMX)
 }
 
 //HasVMX returns true if VMX is supported
-func (h HwApi) HasVMX() bool {
+func (h HwAPI) HasVMX() bool {
 	return cpuid.HasFeature(cpuid.VMX)
 }
 
 //HasMTRR returns true if MTRR are supported
-func (h HwApi) HasMTRR() bool {
+func (h HwAPI) HasMTRR() bool {
 	return cpuid.HasFeature(cpuid.MTRR) || cpuid.HasExtraFeature(cpuid.MTRR_2)
 }
 
 //ProcessorBrandName returns the CPU brand name
-func (h HwApi) ProcessorBrandName() string {
+func (h HwAPI) ProcessorBrandName() string {
 	return cpuid.ProcessorBrandString
 }
 
 //CPUSignature returns CPUID=1 eax
-func (h HwApi) CPUSignature() uint32 {
+func (h HwAPI) CPUSignature() uint32 {
 	eax, _, _, _ := cpuidLow(1, 0)
 	return eax
 }
 
 //CPULogCount returns number of logical CPU cores
-func (h HwApi) CPULogCount() uint32 {
+func (h HwAPI) CPULogCount() uint32 {
 	return 0
 	//return uint32(cpuid.MaxLogicalCPUId)
 }

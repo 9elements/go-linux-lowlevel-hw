@@ -70,10 +70,10 @@ type LowLevelHardwareInterfaces interface {
 	IterateOverSMBIOSTablesType0(callback func(t0 *SMBIOSType0) bool) (ret bool, err error)
 }
 
-//HwApi The context object for low level hardware api
-type HwApi struct{}
+//HwAPI The context object for low level hardware api
+type HwAPI struct{}
 
 //GetAPI Returns an initialized TxtApi object
 func GetAPI() LowLevelHardwareInterfaces {
-	return HwApi{}
+	return HwAPI{}
 }

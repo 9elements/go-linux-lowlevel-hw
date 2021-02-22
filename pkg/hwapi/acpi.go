@@ -64,7 +64,8 @@ type acpiXsdt struct {
 	//Entry           []uint64 count depend on Length field
 }
 
-func (h HwApi) GetACPITableSysFS(n string) ([]byte, error) {
+// GetACPITableSysFS returns the ACPI table as present in sysfs
+func (h HwAPI) GetACPITableSysFS(n string) ([]byte, error) {
 	buf, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", acpiSysfsPath, n))
 	if err != nil {
 		return nil, fmt.Errorf("Cannot access sysfs path %s: %s", acpiSysfsPath, err)
@@ -77,7 +78,7 @@ var (
 	backupRSDTList []uint32
 )
 
-func (h HwApi) getACPITableDevMemRSDT(address uint32) ([]uint32, []byte, error) {
+func (h HwAPI) getACPITableDevMemRSDT(address uint32) ([]uint32, []byte, error) {
 	var rsdt acpiRsdt
 	var hdrs []uint32
 
@@ -131,7 +132,7 @@ var (
 	backupXSDTList []uint64
 )
 
-func (h HwApi) getACPITableDevMemXSDT(address uint64) ([]uint64, []byte, error) {
+func (h HwAPI) getACPITableDevMemXSDT(address uint64) ([]uint64, []byte, error) {
 	var xsdt acpiXsdt
 	var hdrs []uint64
 
@@ -185,7 +186,7 @@ var (
 	backupRawRSDP []byte
 )
 
-func (h HwApi) parseSystab() ([]byte, ACPIRsdp, error) {
+func (h HwAPI) parseSystab() ([]byte, ACPIRsdp, error) {
 	var rsdp ACPIRsdp
 
 	buf := make([]byte, binary.Size(rsdp))
@@ -228,7 +229,7 @@ func (h HwApi) parseSystab() ([]byte, ACPIRsdp, error) {
 	return nil, rsdp, fmt.Errorf("RSDP not found in systab")
 }
 
-func (h HwApi) scanLowMem() ([]byte, ACPIRsdp, error) {
+func (h HwAPI) scanLowMem() ([]byte, ACPIRsdp, error) {
 
 	var rsdp ACPIRsdp
 
@@ -253,7 +254,7 @@ func (h HwApi) scanLowMem() ([]byte, ACPIRsdp, error) {
 	return nil, rsdp, fmt.Errorf("RSDP not found in low memory")
 }
 
-func (h HwApi) scanEBDA() ([]byte, ACPIRsdp, error) {
+func (h HwAPI) scanEBDA() ([]byte, ACPIRsdp, error) {
 
 	var rsdp ACPIRsdp
 
@@ -279,7 +280,7 @@ func (h HwApi) scanEBDA() ([]byte, ACPIRsdp, error) {
 	return nil, rsdp, fmt.Errorf("RSDP not found in low memory")
 }
 
-func (h HwApi) scanReservedMem() ([]byte, ACPIRsdp, error) {
+func (h HwAPI) scanReservedMem() ([]byte, ACPIRsdp, error) {
 
 	var rsdp ACPIRsdp
 
@@ -349,7 +350,7 @@ func verifyRSDP(buf []byte, rsdp ACPIRsdp) error {
 	return nil
 }
 
-func (h HwApi) getACPITableDevMemRSDP() ([]byte, ACPIRsdp, error) {
+func (h HwAPI) getACPITableDevMemRSDP() ([]byte, ACPIRsdp, error) {
 
 	var rsdp ACPIRsdp
 
@@ -402,7 +403,8 @@ func (h HwApi) getACPITableDevMemRSDP() ([]byte, ACPIRsdp, error) {
 	return nil, rsdp, fmt.Errorf("RSDP not found")
 }
 
-func (h HwApi) GetACPITableDevMem(n string) ([]byte, error) {
+// GetACPITableDevMem returns the ACPI table as present in memory
+func (h HwAPI) GetACPITableDevMem(n string) ([]byte, error) {
 
 	rsdpBuf, rsdp, err := h.getACPITableDevMemRSDP()
 	if err != nil {

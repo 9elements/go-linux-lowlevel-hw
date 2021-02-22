@@ -7,7 +7,8 @@ import (
 	"github.com/fearful-symmetry/gomsr"
 )
 
-func (h HwApi) ReadMSR(msr int64) (uint64, error) {
+// ReadMSR returns the MSR on core #0
+func (h HwAPI) ReadMSR(msr int64) (uint64, error) {
 	msrCtx, err := gomsr.MSR(0)
 	if err != nil {
 		return 0, err
@@ -20,7 +21,8 @@ func (h HwApi) ReadMSR(msr int64) (uint64, error) {
 	return msrData, nil
 }
 
-func (h HwApi) ReadMSRAllCores(msr int64) (uint64, error) {
+// ReadMSRAllCores returns the MSR and errors if it's not the same on all cores
+func (h HwAPI) ReadMSRAllCores(msr int64) (uint64, error) {
 	var data uint64
 	for i := 0; i < runtime.NumCPU(); i++ {
 		msrCtx, err := gomsr.MSR(i)

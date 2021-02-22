@@ -13,7 +13,7 @@ const (
 )
 
 // NewTPM Looks for a TPM device, returns it if one is found
-func (h HwApi) NewTPM() (*TPM, error) {
+func (h HwAPI) NewTPM() (*TPM, error) {
 	tpm, err := NewTPM()
 	if err != nil {
 		return nil, err
@@ -22,7 +22,7 @@ func (h HwApi) NewTPM() (*TPM, error) {
 }
 
 // NVLocked returns true if the NV RAM is locked, otherwise false
-func (h HwApi) NVLocked(tpmCon *TPM) (bool, error) {
+func (h HwAPI) NVLocked(tpmCon *TPM) (bool, error) {
 	var res bool
 	var err error
 	var flags tpm1.PermanentFlags
@@ -49,16 +49,16 @@ func (h HwApi) NVLocked(tpmCon *TPM) (bool, error) {
 }
 
 // ReadNVPublic reads public data about an NV index
-func (h HwApi) ReadNVPublic(tpmCon *TPM, index uint32) ([]byte, error) {
+func (h HwAPI) ReadNVPublic(tpmCon *TPM, index uint32) ([]byte, error) {
 	return tpmCon.ReadNVPublic(index)
 }
 
 // NVReadValue reads a given NV index
-func (h HwApi) NVReadValue(tpmCon *TPM, index uint32, password string, size, offhandle uint32) ([]byte, error) {
+func (h HwAPI) NVReadValue(tpmCon *TPM, index uint32, password string, size, offhandle uint32) ([]byte, error) {
 	return tpmCon.NVReadValue(index, password, size, offhandle)
 }
 
 // ReadPCR read fom a given tpm connection a given pc register
-func (h HwApi) ReadPCR(tpmCon *TPM, pcr uint32) ([]byte, error) {
+func (h HwAPI) ReadPCR(tpmCon *TPM, pcr uint32) ([]byte, error) {
 	return tpmCon.ReadPCR(pcr)
 }

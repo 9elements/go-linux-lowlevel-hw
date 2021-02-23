@@ -18,7 +18,7 @@ jobs:
       - run: go mod download
       - run: go mod verify
       - run: go test ./pkg/hwapi/
-
+      - run: go build -ldflags "-X main.gitcommit=${CIRCLE_SHA1} -X main.gittag=${CIRCLE_TAG}" -o test_pci_walk cmd/test_pci_walk/main.go
 
 workflows:
   version: 2

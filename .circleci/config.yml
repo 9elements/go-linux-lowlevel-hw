@@ -19,7 +19,27 @@ jobs:
       - run: go mod verify
       - run: go test ./pkg/hwapi/
       - run: go build -ldflags "-X main.gitcommit=${CIRCLE_SHA1} -X main.gittag=${CIRCLE_TAG}" -o test_pci_walk cmd/test_pci_walk/main.go
+      - run: go test -c ./pkg/...
+      - run: mkdir out
+      - run: cp hwapi.test out
 
+      - persist_to_workspace:
+          root: out
+          paths:
+            - hwapi.test
+
+  test_in_qemu:
+    environment:
+      TERM: xterm-256color
+    docker:
+      - image: 9elements/qemu-linux-runtime
+    steps:
+      - attach_workspace:
+          at: /tmp/out
+      - run: cp /tmp/out/hwapi.test /repo/scripts/hwapi.test
+      - run: echo 'RUN_IN_QEMU=TRUE ./hwapi.test -test.v' > /repo/scripts/runtest.sh; chmod +x /repo/scripts/runtest.sh
+      - run: cd /repo; /repo/entrypoint.sh
+ 
 workflows:
   version: 2
   main:
@@ -30,3 +50,12 @@ workflows:
               only: /.*/
             tags:
               only: /.*/
+      - test_in_qemu:
+          requires:
+            - build
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              only: /.*/
+

@@ -19,7 +19,7 @@ and testing envirnoments with relaxed kernel security.
 How to use this library
 -----------------------
 
-´´´
+```
 package main
 
 import (

@@ -19,8 +19,8 @@ func isReservedType(regionType string) bool {
 	}
 }
 
-//IterateOverE820Ranges iterates over all e820 entries and invokes the callback for every matching type
-func IterateOverE820Ranges(t string, callback func(start uint64, end uint64) bool) (bool, error) {
+//iterateOverE820Ranges iterates over all e820 entries and invokes the callback for every matching type
+func iterateOverE820Ranges(t string, callback func(start uint64, end uint64) bool) (bool, error) {
 
 	dir, err := os.Open("/sys/firmware/memmap")
 	if err != nil {

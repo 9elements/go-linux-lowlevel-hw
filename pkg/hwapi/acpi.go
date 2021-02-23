@@ -286,7 +286,7 @@ func (h HwAPI) scanReservedMem() ([]byte, ACPIRsdp, error) {
 
 	buf := make([]byte, binary.Size(rsdp))
 
-	IterateOverE820Ranges("ACPI Tables", func(start uint64, end uint64) bool {
+	iterateOverE820Ranges("ACPI Tables", func(start uint64, end uint64) bool {
 		for i := int64(start); i < int64(end)-int64(binary.Size(rsdp)); i += 16 {
 			err := h.ReadPhysBuf(i, buf)
 			if err != nil {

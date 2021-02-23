@@ -16,6 +16,8 @@ type LowLevelHardwareInterfaces interface {
 
 	// e820.go
 	IsReservedInE820(start uint64, end uint64) (bool, error)
+	UsableMemoryAbove4G() (size uint64, err error)
+	UsableMemoryBelow4G() (size uint64, err error)
 
 	// iommu.go
 	LookupIOAddress(addr uint64, regs VTdRegisters) ([]uint64, error)

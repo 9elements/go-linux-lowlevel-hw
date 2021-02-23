@@ -61,6 +61,30 @@ func iterateOverE820Ranges(t string, callback func(start uint64, end uint64) boo
 	return false, nil
 }
 
+// UsableMemoryAbove4G returns the usable memory above 4GiB
+func (h HwAPI) UsableMemoryAbove4G() (size uint64, err error) {
+	_, err = iterateOverE820Ranges("system ram", func(rstart uint64, rend uint64) bool {
+		if rstart > 0xffffffff {
+			size += (rend - rstart)
+		}
+		return false
+	})
+
+	return
+}
+
+// UsableMemoryBelow4G returns the usable memory below 4GiB
+func (h HwAPI) UsableMemoryBelow4G() (size uint64, err error) {
+	_, err = iterateOverE820Ranges("system ram", func(rstart uint64, rend uint64) bool {
+		if rstart <= 0xffffffff {
+			size += (rend - rstart)
+		}
+		return false
+	})
+
+	return
+}
+
 //IsReservedInE820 reads the e820 table exported via /sys/firmware/memmap and checks whether
 // the range [start; end] is marked as reserved. Returns true if it is reserved,
 // false if not.

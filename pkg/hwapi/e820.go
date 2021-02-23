@@ -9,10 +9,8 @@ import (
 )
 
 func isReservedType(regionType string) bool {
-	switch t := strings.TrimSpace(regionType); t {
+	switch t := strings.ToLower(strings.TrimSpace(regionType)); t {
 	case "reserved":
-		return true
-	case "Reserved":
 		return true
 	default:
 		return false
@@ -40,7 +38,7 @@ func iterateOverE820Ranges(t string, callback func(start uint64, end uint64) boo
 			if err != nil {
 				continue
 			}
-			if strings.Contains(string(buf), t) {
+			if strings.Contains(strings.ToLower(string(buf)), strings.ToLower(t)) {
 				path := fmt.Sprintf("/sys/firmware/memmap/%s/start", subdir.Name())
 				thisStart, err := readHexInteger(path)
 				if err != nil {
@@ -66,51 +64,21 @@ func iterateOverE820Ranges(t string, callback func(start uint64, end uint64) boo
 //IsReservedInE820 reads the e820 table exported via /sys/firmware/memmap and checks whether
 // the range [start; end] is marked as reserved. Returns true if it is reserved,
 // false if not.
-func (h HwAPI) IsReservedInE820(start uint64, end uint64) (bool, error) {
+func (h HwAPI) IsReservedInE820(start uint64, end uint64) (contains bool, err error) {
+	contains = false
+
 	if start > end {
 		return false, fmt.Errorf("Invalid range")
 	}
 
-	dir, err := os.Open("/sys/firmware/memmap")
-	if err != nil {
-		return false, fmt.Errorf("Cannot access e820 table: %s", err)
-	}
-
-	subdirs, err := dir.Readdir(0)
-	if err != nil {
-		return false, fmt.Errorf("Cannot access e820 table: %s", err)
-	}
-
-	for _, subdir := range subdirs {
-		if subdir.IsDir() {
-
-			path := fmt.Sprintf("/sys/firmware/memmap/%s/type", subdir.Name())
-			buf, err := ioutil.ReadFile(path)
-			if err != nil {
-				continue
-			}
-
-			if isReservedType(string(buf)) {
-				path := fmt.Sprintf("/sys/firmware/memmap/%s/start", subdir.Name())
-				thisStart, err := readHexInteger(path)
-				if err != nil {
-					continue
-				}
-
-				path = fmt.Sprintf("/sys/firmware/memmap/%s/end", subdir.Name())
-				thisEnd, err := readHexInteger(path)
-				if err != nil {
-					continue
-				}
-
-				if thisStart <= start && thisEnd >= end {
-					return true, nil
-				}
-			}
+	iterateOverE820Ranges("reserved", func(rstart uint64, rend uint64) bool {
+		if rstart <= start && rend >= end {
+			contains = true
+			return true
 		}
-	}
-
-	return false, nil
+		return false
+	})
+	return
 }
 
 func readHexInteger(path string) (uint64, error) {

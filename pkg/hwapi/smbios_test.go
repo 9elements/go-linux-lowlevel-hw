@@ -37,3 +37,41 @@ func TestSMBIOSQemu(t *testing.T) {
 		t.Errorf("Type 0 not found")
 	}
 }
+
+func TestSMBIOSType17(t *testing.T) {
+	h := GetAPI()
+	if os.Getenv("RUN_IN_QEMU") != "TRUE" {
+		t.Skip("Not running on QEMU")
+	}
+	count := 0
+	_, err := h.IterateOverSMBIOSTablesType17(func(s *SMBIOSType17) bool {
+		count++
+		if s.Type != 17 {
+			t.Errorf("Got unexpected type %d", s.Type)
+		}
+		if s.TotalWidth < s.DataWidth {
+			t.Errorf("TotalWidth (%x) < DataWidth (%x\n", s.TotalWidth, s.DataWidth)
+		}
+		if s.DataWidth == 0 {
+			t.Errorf("DataWidth is zero\n")
+		}
+		if s.Size != 0 && s.Size != 0xFFFF && s.Size != 0x7FFF {
+			if s.Size&0xFFFF > 0 {
+				t.Errorf("Size is not multiple of 1 KiB\n")
+			}
+		}
+		t.Logf("TotalWidth 0x%x\n", s.TotalWidth)
+		t.Logf("DataWidth 0x%x\n", s.DataWidth)
+		t.Logf("DeviceLocator %s\n", s.DeviceLocator)
+		t.Logf("BankLocator %s\n", s.BankLocator)
+		t.Logf("Size 0x%x\n", s.Size)
+
+		return false
+	})
+	if err != nil {
+		t.Errorf("IterateOverSMBIOSTables failed with %v", err)
+	}
+	if count == 0 {
+		t.Errorf("Type 17 not found")
+	}
+}

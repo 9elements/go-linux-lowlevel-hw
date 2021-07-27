@@ -8,26 +8,17 @@ import (
 	"strings"
 )
 
-func isReservedType(regionType string) bool {
-	switch t := strings.ToLower(strings.TrimSpace(regionType)); t {
-	case "reserved":
-		return true
-	default:
-		return false
-	}
-}
-
 //iterateOverE820Ranges iterates over all e820 entries and invokes the callback for every matching type
 func iterateOverE820Ranges(t string, callback func(start uint64, end uint64) bool) (bool, error) {
 
 	dir, err := os.Open("/sys/firmware/memmap")
 	if err != nil {
-		return false, fmt.Errorf("Cannot access e820 table: %s", err)
+		return false, fmt.Errorf("cannot access e820 table: %s", err)
 	}
 
 	subdirs, err := dir.Readdir(0)
 	if err != nil {
-		return false, fmt.Errorf("Cannot access e820 table: %s", err)
+		return false, fmt.Errorf("cannot access e820 table: %s", err)
 	}
 
 	for _, subdir := range subdirs {
@@ -88,21 +79,21 @@ func (h HwAPI) UsableMemoryBelow4G() (size uint64, err error) {
 //IsReservedInE820 reads the e820 table exported via /sys/firmware/memmap and checks whether
 // the range [start; end] is marked as reserved. Returns true if it is reserved,
 // false if not.
-func (h HwAPI) IsReservedInE820(start uint64, end uint64) (contains bool, err error) {
-	contains = false
-
+func (h HwAPI) IsReservedInE820(start uint64, end uint64) (bool, error) {
 	if start > end {
-		return false, fmt.Errorf("Invalid range")
+		return false, fmt.Errorf("invalid range")
 	}
 
-	iterateOverE820Ranges("reserved", func(rstart uint64, rend uint64) bool {
+	contains, err := iterateOverE820Ranges("reserved", func(rstart uint64, rend uint64) bool {
 		if rstart <= start && rend >= end {
-			contains = true
 			return true
 		}
 		return false
 	})
-	return
+	if err != nil {
+		return false, err
+	}
+	return contains, nil
 }
 
 func readHexInteger(path string) (uint64, error) {

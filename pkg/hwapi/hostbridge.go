@@ -115,9 +115,12 @@ func (h HwAPI) ReadHostBridgeTseg() (uint32, uint32, error) {
 		return 0, 0, err
 	}
 	if vendorid != 0x8086 {
-		return 0, 0, fmt.Errorf("Hostbridge is not made by Intel")
+		return 0, 0, fmt.Errorf("hostbridge is not made by Intel")
 	}
 	deviceid, err := h.PCIReadDeviceID(pciHostbridge)
+	if err != nil {
+		return 0, 0, err
+	}
 
 	var found bool
 	for _, id := range HostbridgeIDsSandyCompatible {
@@ -143,7 +146,7 @@ func (h HwAPI) ReadHostBridgeTseg() (uint32, uint32, error) {
 	}
 
 	if !found {
-		return 0, 0, fmt.Errorf("Hostbridge is unsupported")
+		return 0, 0, fmt.Errorf("hostbridge is unsupported")
 	}
 
 	tsegDev := PCIDevice{
@@ -193,9 +196,12 @@ func (h HwAPI) ReadHostBridgeDPR() (DMAProtectedRange, error) {
 		return ret, err
 	}
 	if vendorid != 0x8086 {
-		return ret, fmt.Errorf("Hostbridge is not made by Intel")
+		return ret, fmt.Errorf("hostbridge is not made by Intel")
 	}
 	deviceid, err := h.PCIReadDeviceID(pciHostbridge)
+	if err != nil {
+		return ret, err
+	}
 
 	var found bool
 	for _, id := range HostbridgeIDsSandyCompatible {
@@ -218,7 +224,7 @@ func (h HwAPI) ReadHostBridgeDPR() (DMAProtectedRange, error) {
 	}
 
 	if !found {
-		return ret, fmt.Errorf("Hostbridge is unsupported")
+		return ret, fmt.Errorf("hostbridge is unsupported")
 	}
 
 	tsegDev := PCIDevice{

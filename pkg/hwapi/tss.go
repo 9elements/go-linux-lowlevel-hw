@@ -303,7 +303,7 @@ func readTPM20Information(rwc io.ReadWriter) (TPMInfo, error) {
 			return TPMInfo{}, fmt.Errorf("got capability of type %T, want tpm2.TaggedProperty", caps[0])
 		}
 		// Reconstruct the 4 ASCII octets from the uint32 value.
-		vendorInfo += string(subset.Value&0xFF000000) + string(subset.Value&0xFF0000) + string(subset.Value&0xFF00) + string(subset.Value&0xFF)
+		vendorInfo += fmt.Sprint(subset.Value&0xFF000000) + fmt.Sprint(subset.Value&0xFF0000) + fmt.Sprint(subset.Value&0xFF00) + fmt.Sprint(subset.Value&0xFF)
 	}
 
 	caps, _, err := tpm2.GetCapability(rwc, tpm2.CapabilityTPMProperties, 1, uint32(tpm2.Manufacturer))

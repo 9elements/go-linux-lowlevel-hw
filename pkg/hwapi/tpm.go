@@ -40,7 +40,7 @@ func (h HwAPI) NVLocked(tpmCon *TPM) (bool, error) {
 			return false, err
 		}
 		res = strings.Contains(err.Error(), tpm2LockedResult)
-		if res != true {
+		if !res {
 			return res, err
 		}
 		return res, nil

@@ -103,7 +103,7 @@ func (erw *EmulatorReadWriteCloser) Write(p []byte) (int, error) {
 // Close implements io.Closer by closing the Unix domain socket if one is open.
 func (erw *EmulatorReadWriteCloser) Close() error {
 	if erw.conn == nil {
-		return fmt.Errorf("Cannot call Close when no connection is open")
+		return fmt.Errorf("cannot call Close when no connection is open")
 	}
 	err := erw.conn.Close()
 	erw.conn = nil

@@ -96,17 +96,17 @@ type VTdRegisters struct {
 	Reserved12                              uint64 // Reserved for future expansion of Virtual Command Response Register.
 }
 
-func (h HwAPI) readVTdRegs() (VTdRegisters, error) {
+func readVTdRegs(l LowLevelHardwareInterfaces) (VTdRegisters, error) {
 	var regs VTdRegisters
 
 	dir, err := os.Open("/sys/class/iommu/")
 	if err != nil {
-		return regs, fmt.Errorf("No IOMMU found: %s", err)
+		return regs, fmt.Errorf("no IOMMU found: %s", err)
 	}
 
 	subdirs, err := dir.Readdir(0)
 	if err != nil {
-		return regs, fmt.Errorf("No IOMMU found: %s", err)
+		return regs, fmt.Errorf("no IOMMU found: %s", err)
 	}
 
 	for _, subdir := range subdirs {
@@ -122,7 +122,7 @@ func (h HwAPI) readVTdRegs() (VTdRegisters, error) {
 		}
 
 		buf := make([]byte, unsafe.Sizeof(regs))
-		err = h.ReadPhysBuf(int64(addr), buf)
+		err = l.ReadPhysBuf(int64(addr), buf)
 		if err != nil {
 			continue
 		}
@@ -136,7 +136,7 @@ func (h HwAPI) readVTdRegs() (VTdRegisters, error) {
 		return regs, nil
 	}
 
-	return regs, fmt.Errorf("No IOMMU found: /sys/class/iommu/*/intel-iommu/address does not exists or is malformed")
+	return regs, fmt.Errorf("no IOMMU found: /sys/class/iommu/*/intel-iommu/address does not exists or is malformed")
 }
 
 //LookupIOAddress returns the address of the root Tbl
@@ -145,7 +145,7 @@ func (h HwAPI) LookupIOAddress(addr uint64, regs VTdRegisters) ([]uint64, error)
 	ttm := (regs.RootTableAddress >> 10) & 3
 
 	if ttm == 0 {
-		return h.lookupIOLegacy(addr, rootTblAddr)
+		return lookupIOLegacy(addr, rootTblAddr, h)
 	} else if ttm == 1 {
 		return lookupIOScalable(addr, rootTblAddr)
 	} else {
@@ -153,13 +153,13 @@ func (h HwAPI) LookupIOAddress(addr uint64, regs VTdRegisters) ([]uint64, error)
 	}
 }
 
-func (h HwAPI) lookupIOLegacy(addr, rootTblAddr uint64) ([]uint64, error) {
+func lookupIOLegacy(addr, rootTblAddr uint64, l LowLevelHardwareInterfaces) ([]uint64, error) {
 	ret := []uint64{}
 
 	for bus := int64(0); bus < 256; bus++ {
 		// read root table entries
 		var rootTblEnt Uint64
-		err := h.ReadPhys(int64(rootTblAddr)+bus*16+8, &rootTblEnt)
+		err := l.ReadPhys(int64(rootTblAddr)+bus*16+8, &rootTblEnt)
 		if err != nil {
 			return []uint64{}, err
 		}
@@ -176,7 +176,7 @@ func (h HwAPI) lookupIOLegacy(addr, rootTblAddr uint64) ([]uint64, error) {
 		var ctxTblEntLo Uint64
 
 		for devfn := int64(0); devfn < 32*8; devfn++ {
-			err = h.ReadPhys(int64(ctxTblAddr)+devfn*16+8, &ctxTblEntLo)
+			err = l.ReadPhys(int64(ctxTblAddr)+devfn*16+8, &ctxTblEntLo)
 			if err != nil {
 				return []uint64{}, err
 			}
@@ -185,7 +185,7 @@ func (h HwAPI) lookupIOLegacy(addr, rootTblAddr uint64) ([]uint64, error) {
 				continue
 			}
 
-			err = h.ReadPhys(int64(ctxTblAddr)+devfn*16, &ctxTblEntHi)
+			err = l.ReadPhys(int64(ctxTblAddr)+devfn*16, &ctxTblEntHi)
 			if err != nil {
 				return []uint64{}, err
 			}
@@ -205,7 +205,7 @@ func (h HwAPI) lookupIOLegacy(addr, rootTblAddr uint64) ([]uint64, error) {
 			if aw == 3 || aw == 2 {
 				// Page map level 5
 				var l5ent Uint64
-				err = h.ReadPhys(int64(pml5Addr)+(int64(addr>>48)&0x1ff)*8, &l5ent)
+				err = l.ReadPhys(int64(pml5Addr)+(int64(addr>>48)&0x1ff)*8, &l5ent)
 				if err != nil {
 					return []uint64{}, err
 				}
@@ -220,7 +220,7 @@ func (h HwAPI) lookupIOLegacy(addr, rootTblAddr uint64) ([]uint64, error) {
 				if aw == 2 {
 					// Page map level 4
 					var l4ent Uint64
-					err = h.ReadPhys(int64(pml4Addr)+(int64(addr>>39)&0x1ff)*8, &l4ent)
+					err = l.ReadPhys(int64(pml4Addr)+(int64(addr>>39)&0x1ff)*8, &l4ent)
 					if err != nil {
 						return []uint64{}, err
 					}
@@ -240,7 +240,7 @@ func (h HwAPI) lookupIOLegacy(addr, rootTblAddr uint64) ([]uint64, error) {
 
 			// Page directory pointer table
 			var l3ent Uint64
-			err = h.ReadPhys(int64(pdptAddr)+(int64(addr>>30)&0x1ff)*8, &l3ent)
+			err = l.ReadPhys(int64(pdptAddr)+(int64(addr>>30)&0x1ff)*8, &l3ent)
 			if err != nil {
 				return []uint64{}, err
 			}
@@ -254,7 +254,7 @@ func (h HwAPI) lookupIOLegacy(addr, rootTblAddr uint64) ([]uint64, error) {
 
 			// Page directory
 			var l2ent Uint64
-			err = h.ReadPhys(int64(pdAddr)+(int64(addr>>21)&0x1ff)*8, &l2ent)
+			err = l.ReadPhys(int64(pdAddr)+(int64(addr>>21)&0x1ff)*8, &l2ent)
 			if err != nil {
 				return []uint64{}, err
 			}
@@ -268,7 +268,7 @@ func (h HwAPI) lookupIOLegacy(addr, rootTblAddr uint64) ([]uint64, error) {
 
 			// Page table
 			var l1ent Uint64
-			err = h.ReadPhys(int64(ptAddr)+(int64(addr>>12)&0x1ff)*8, &l1ent)
+			err = l.ReadPhys(int64(ptAddr)+(int64(addr>>12)&0x1ff)*8, &l1ent)
 			if err != nil {
 				return []uint64{}, err
 			}
@@ -288,7 +288,7 @@ func (h HwAPI) lookupIOLegacy(addr, rootTblAddr uint64) ([]uint64, error) {
 }
 
 func lookupIOScalable(addr, rootTblAddr uint64) ([]uint64, error) {
-	return []uint64{}, fmt.Errorf("Scalable IOMMU not implemented")
+	return []uint64{}, fmt.Errorf("scalable IOMMU not implemented")
 	// read root table entry
 
 	// read ctx entry
@@ -298,9 +298,9 @@ func lookupIOScalable(addr, rootTblAddr uint64) ([]uint64, error) {
 	// make sure 2-pass translation isnt on
 }
 
-//AddressRangesIsDMAProtected returns true if the address is DMA protected by the IOMMU
+// AddressRangesIsDMAProtected returns true if the address is DMA protected by the IOMMU
 func (h HwAPI) AddressRangesIsDMAProtected(first, end uint64) (bool, error) {
-	regs, err := h.readVTdRegs()
+	regs, err := readVTdRegs(h)
 	if err != nil {
 		return false, err
 	}
@@ -324,7 +324,7 @@ func (h HwAPI) AddressRangesIsDMAProtected(first, end uint64) (bool, error) {
 			return false, err
 		}
 
-		if len(vas) < 0 {
+		if len(vas) < 1 {
 			return false, nil
 		}
 	}

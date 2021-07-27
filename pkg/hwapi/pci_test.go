@@ -192,20 +192,27 @@ func TestPCIBusMasterQEMU(t *testing.T) {
 	if err != nil {
 		t.Errorf("PCIReadConfig8 failed with error %v", err)
 	}
-	// Restore register
-	defer h.PCIWriteConfig8(d1f0, 4, backup)
 
 	reg8 := backup ^ 4
 	err = h.PCIWriteConfig8(d1f0, 4, reg8)
 	if err != nil {
+		if err := h.PCIWriteConfig8(d1f0, 4, backup); err != nil {
+			t.Error(err)
+		}
 		t.Errorf("PCIWriteConfig8 failed with error %v", err)
 	}
 
 	reg8, err = h.PCIReadConfig8(d1f0, 4)
 	if err != nil {
+		if err := h.PCIWriteConfig8(d1f0, 4, backup); err != nil {
+			t.Error(err)
+		}
 		t.Errorf("PCIReadConfig8 failed with error %v", err)
 	}
 	if reg8 == backup {
+		if err := h.PCIWriteConfig8(d1f0, 4, backup); err != nil {
+			t.Error(err)
+		}
 		t.Errorf("PCIWriteConfig8 failed. Register content is unchanged.")
 	}
 }

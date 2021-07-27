@@ -11,10 +11,6 @@ jobs:
     working_directory: /go/src/github.com/9elements/go-linux-lowlevel-hw
     steps:
       - checkout
-      - run: sudo apt install -y golint
-      # specify any bash command here prefixed with `run: `
-      - run: if [ "$(gofmt -l .)" != "" ]; then exit 1; fi
-      - run: golint -set_exit_status ./pkg/hwapi
       - run: go mod download
       - run: go mod verify
       - run: go test ./pkg/hwapi/
@@ -39,7 +35,7 @@ jobs:
       - run: cp /tmp/out/hwapi.test /repo/scripts/hwapi.test
       - run: echo 'RUN_IN_QEMU=TRUE ./hwapi.test -test.v' > /repo/scripts/runtest.sh; chmod +x /repo/scripts/runtest.sh
       - run: cd /repo; set -e; /repo/entrypoint.sh
- 
+
 workflows:
   version: 2
   main:

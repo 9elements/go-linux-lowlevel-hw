@@ -34,8 +34,13 @@ func (h HwAPI) ProcessorBrandName() string {
 
 //CPUSignature returns CPUID=1 eax
 func (h HwAPI) CPUSignature() uint32 {
-	eax, _, _, _ := cpuidLow(1, 0)
+	eax, _, _, _ := h.CPUSignatureFull()
 	return eax
+}
+
+//CPUSignatureFull returns CPUID=1 eax, ebx, ecx, edx
+func (h HwAPI) CPUSignatureFull() (uint32, uint32, uint32, uint32) {
+	return cpuidLow(1, 0)
 }
 
 //CPULogCount returns number of logical CPU cores

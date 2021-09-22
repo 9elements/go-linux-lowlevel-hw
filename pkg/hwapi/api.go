@@ -12,6 +12,7 @@ type LowLevelHardwareInterfaces interface {
 	HasMTRR() bool
 	ProcessorBrandName() string
 	CPUSignature() uint32
+	CPUSignatureFull() (uint32, uint32, uint32, uint32)
 	CPULogCount() uint32
 
 	// e820.go

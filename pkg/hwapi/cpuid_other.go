@@ -33,6 +33,11 @@ func (h HwAPI) CPUSignature() uint32 {
 	return 0
 }
 
+//CPUSignatureFull returns CPUID=1 eax, ebx, ecx, edx
+func (h HwAPI) CPUSignatureFull() (uint32, uint32, uint32, uint32) {
+	return 0, 0, 0, 0
+}
+
 //CPULogCount returns number of logical CPU cores
 func (h HwAPI) CPULogCount() uint32 {
 	return 0

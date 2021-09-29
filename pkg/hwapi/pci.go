@@ -54,8 +54,8 @@ func (h HwAPI) PCIEnumerateVisibleDevices(cb func(d PCIDevice) (abort bool)) (er
 	return
 }
 
-//pciReadConfigSpace reads from PCI config space into buf
-func (h HwAPI) pciReadConfigSpace(d PCIDevice, off int, buf interface{}) (err error) {
+//pciReadConfigSpace reads from PCI config space into out
+func (h HwAPI) PCIReadConfigSpace(d PCIDevice, off int, out interface{}) (err error) {
 	var path string
 	var f *os.File
 	path = fmt.Sprintf("/sys/bus/pci/devices/0000:%02x:%02x.%1x/config", d.Bus, d.Device, d.Function)
@@ -70,51 +70,31 @@ func (h HwAPI) pciReadConfigSpace(d PCIDevice, off int, buf interface{}) (err er
 	if err != nil {
 		return
 	}
-	err = binary.Read(f, binary.LittleEndian, buf)
-
-	return
-}
-
-//PCIReadConfig8 reads 8bits from PCI config space
-func (h HwAPI) PCIReadConfig8(d PCIDevice, off int) (reg8 uint8, err error) {
-
-	err = h.pciReadConfigSpace(d, off, &reg8)
-
-	return
-}
-
-//PCIReadConfig16 reads 16bits from PCI config space
-func (h HwAPI) PCIReadConfig16(d PCIDevice, off int) (reg16 uint16, err error) {
-
-	err = h.pciReadConfigSpace(d, off, &reg16)
-
-	return
-}
-
-//PCIReadConfig32 reads 32bits from PCI config space
-func (h HwAPI) PCIReadConfig32(d PCIDevice, off int) (reg32 uint32, err error) {
-
-	err = h.pciReadConfigSpace(d, off, &reg32)
+	err = binary.Read(f, binary.LittleEndian, out)
 
 	return
 }
 
 //PCIReadVendorID reads the device vendor ID from PCI config space
 func (h HwAPI) PCIReadVendorID(d PCIDevice) (id uint16, err error) {
-	id, err = h.PCIReadConfig16(d, 0)
+	if err = h.PCIReadConfigSpace(d, 0, &id); err != nil {
+		return 0, err
+	}
 
 	return
 }
 
 //PCIReadDeviceID reads the device ID from PCI config space
 func (h HwAPI) PCIReadDeviceID(d PCIDevice) (id uint16, err error) {
-	id, err = h.PCIReadConfig16(d, 2)
+	if err = h.PCIReadConfigSpace(d, 2, &id); err != nil {
+		return 0, err
+	}
 
 	return
 }
 
-//pciWriteConfigSpace writes to PCI config space from buf
-func (h HwAPI) pciWriteConfigSpace(d PCIDevice, off int, buf interface{}) (err error) {
+//pciWriteConfigSpace writes to PCI config space from in
+func (h HwAPI) PCIWriteConfigSpace(d PCIDevice, off int, in interface{}) (err error) {
 	var path string
 	var f *os.File
 	path = fmt.Sprintf("/sys/bus/pci/devices/0000:%02x:%02x.%1x/config", d.Bus, d.Device, d.Function)
@@ -129,31 +109,7 @@ func (h HwAPI) pciWriteConfigSpace(d PCIDevice, off int, buf interface{}) (err e
 	if err != nil {
 		return
 	}
-	err = binary.Write(f, binary.LittleEndian, buf)
-
-	return
-}
-
-//PCIWriteConfig8 writes 8bits to PCI config space
-func (h HwAPI) PCIWriteConfig8(d PCIDevice, off int, val uint8) (err error) {
-
-	err = h.pciWriteConfigSpace(d, off, val)
-
-	return
-}
-
-//PCIWriteConfig16 writes 16bits to PCI config space
-func (h HwAPI) PCIWriteConfig16(d PCIDevice, off int, val uint16) (err error) {
-
-	err = h.pciWriteConfigSpace(d, off, val)
-
-	return
-}
-
-//PCIWriteConfig32 writes 32bits to PCI config space
-func (h HwAPI) PCIWriteConfig32(d PCIDevice, off int, val uint32) (err error) {
-
-	err = h.pciWriteConfigSpace(d, off, val)
+	err = binary.Write(f, binary.LittleEndian, in)
 
 	return
 }

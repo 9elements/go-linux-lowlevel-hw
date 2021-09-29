@@ -158,13 +158,11 @@ func (h HwAPI) ReadHostBridgeTseg() (uint32, uint32, error) {
 	var tsegbase uint32
 	var tseglimit uint32
 
-	tsegbase, err = h.PCIReadConfig32(tsegDev, tsegBaseOff)
-	if err != nil {
+	if err = h.PCIReadConfigSpace(tsegDev, tsegBaseOff, &tsegbase); err != nil {
 		return 0, 0, err
 	}
 
-	tseglimit, err = h.PCIReadConfig32(tsegDev, tsegLimitOff)
-	if err != nil {
+	if err = h.PCIReadConfigSpace(tsegDev, tsegLimitOff, &tseglimit); err != nil {
 		return 0, 0, err
 	}
 
@@ -235,8 +233,7 @@ func (h HwAPI) ReadHostBridgeDPR() (DMAProtectedRange, error) {
 
 	var u32 uint32
 
-	u32, err = h.PCIReadConfig32(tsegDev, dprOff)
-	if err != nil {
+	if err = h.PCIReadConfigSpace(tsegDev, dprOff, &u32); err != nil {
 		return ret, err
 	}
 

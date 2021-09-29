@@ -25,8 +25,7 @@ type LowLevelHardwareInterfaces interface {
 	AddressRangesIsDMAProtected(first, end uint64) (bool, error)
 
 	// msr.go
-	ReadMSR(msr int64) (uint64, error)
-	ReadMSRAllCores(msr int64) (uint64, error)
+	ReadMSR(msr int64, core int) (uint64, error)
 
 	// msr_intel.go
 	HasSMRR() (bool, error)

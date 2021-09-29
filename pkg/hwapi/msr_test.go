@@ -38,12 +38,22 @@ func TestReadMSR(t *testing.T) {
 		{"MSR_PLATFORM_INFO", MsrPlatformInfo},
 		{"IA32_PLATFORM_ID", MsrPlatformID},
 	}
-
 	for _, test := range tests {
-		val, err := h.ReadMSRAllCores(test.msr)
-		if err != nil {
-			t.Errorf("ReadMSR for MSR %s failed with %v", test.name, err)
+		var val, oldval uint64
+		numCores := runtime.NumCPU()
+		for i := 0; i < numCores; i++ {
+			val, err = h.ReadMSR(test.msr, i)
+			if err != nil {
+				t.Errorf("ReadMSR for MSR %s failed with %v", test.name, err)
+			}
+			if i != 0 {
+				if val != oldval {
+					t.Errorf("MSR value are not the same for all cores. Core: %d, Value: 0x%x, Previous value: 0x%x", i, val, oldval)
+				}
+			}
+			oldval = val
 		}
+
 		if val == 0 || val == 0xffffffffffffffff {
 			t.Errorf("ReadMSR got unexpected value for MSR %s %v", test.name, val)
 		}
@@ -57,7 +67,7 @@ func TestReadMSRTimeStampCounter(t *testing.T) {
 		t.Skip("Not enough permissions to do test")
 	}
 	if runtime.GOARCH == "amd64" && cpuid.HasFeature(cpuid.TSC) {
-		timestamp1, err := h.ReadMSR(TimeStampCounter)
+		timestamp1, err := h.ReadMSR(TimeStampCounter, 0)
 		if err != nil {
 			t.Errorf("ReadMSR for MSR IA32_TIMESTAMP_COUNTER failed with %v", err)
 		}
@@ -65,7 +75,7 @@ func TestReadMSRTimeStampCounter(t *testing.T) {
 			t.Errorf("ReadMSR got unexpected value for MSR IA32_TIMESTAMP_COUNTER: %v", timestamp1)
 		}
 		time.Sleep(time.Millisecond)
-		timestamp2, err := h.ReadMSR(TimeStampCounter)
+		timestamp2, err := h.ReadMSR(TimeStampCounter, 0)
 		if err != nil {
 			t.Errorf("ReadMSR for MSR IA32_TIMESTAMP_COUNTER failed with %v", err)
 		}
@@ -85,13 +95,22 @@ func TestReadMSREFER(t *testing.T) {
 		t.Skip("Not enough permissions to do test")
 	}
 	if runtime.GOARCH == "amd64" {
-		ia32efer, err := h.ReadMSRAllCores(Ia32Efer)
-		if err != nil {
-			t.Errorf("ReadMSRAllCores for MSR IA32_EFER failed with %v", err)
-		} else {
-			if ia32efer == 0 {
-				t.Errorf("ReadMSRAllCores got unexpected value for MSR IA32_EFER: %v", ia32efer)
+		numCores := runtime.NumCPU()
+		var val, oldval uint64
+		for i := 0; i < numCores; i++ {
+			val, err := h.ReadMSR(Ia32Efer, i)
+			if err != nil {
+				t.Errorf("ReadMSRAllCores for MSR IA32_EFER failed with %v", err)
 			}
+			if i != 0 {
+				if val != oldval {
+					t.Errorf("MSR value are not the same for all cores. Core: %d, Value: 0x%x, Previous value: 0x%x", i, val, oldval)
+				}
+			}
+			oldval = val
+		}
+		if val == 0 {
+			t.Errorf("ReadMSRAllCores got unexpected value for MSR IA32_EFER: %v", val)
 		}
 	}
 }

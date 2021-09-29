@@ -109,16 +109,15 @@ func (h HwAPI) ReadHostBridgeTseg() (uint32, uint32, error) {
 	var tsegLimitOff int
 	var tsegBroadwellDEfix bool
 	var devicenum int
+	var vendorid, deviceid uint16
 
-	vendorid, err := h.PCIReadVendorID(pciHostbridge)
-	if err != nil {
+	if err := h.PCIReadConfigSpace(pciHostbridge, 0, &vendorid); err != nil {
 		return 0, 0, err
 	}
 	if vendorid != 0x8086 {
 		return 0, 0, fmt.Errorf("hostbridge is not made by Intel")
 	}
-	deviceid, err := h.PCIReadDeviceID(pciHostbridge)
-	if err != nil {
+	if err := h.PCIReadConfigSpace(pciHostbridge, 2, &deviceid); err != nil {
 		return 0, 0, err
 	}
 
@@ -158,11 +157,11 @@ func (h HwAPI) ReadHostBridgeTseg() (uint32, uint32, error) {
 	var tsegbase uint32
 	var tseglimit uint32
 
-	if err = h.PCIReadConfigSpace(tsegDev, tsegBaseOff, &tsegbase); err != nil {
+	if err := h.PCIReadConfigSpace(tsegDev, tsegBaseOff, &tsegbase); err != nil {
 		return 0, 0, err
 	}
 
-	if err = h.PCIReadConfigSpace(tsegDev, tsegLimitOff, &tseglimit); err != nil {
+	if err := h.PCIReadConfigSpace(tsegDev, tsegLimitOff, &tseglimit); err != nil {
 		return 0, 0, err
 	}
 
@@ -188,16 +187,14 @@ func (h HwAPI) ReadHostBridgeDPR() (DMAProtectedRange, error) {
 	var dprOff int
 	var devicenum int
 	var ret DMAProtectedRange
-
-	vendorid, err := h.PCIReadVendorID(pciHostbridge)
-	if err != nil {
+	var vendorid, deviceid uint16
+	if err := h.PCIReadConfigSpace(pciHostbridge, 0, &vendorid); err != nil {
 		return ret, err
 	}
 	if vendorid != 0x8086 {
 		return ret, fmt.Errorf("hostbridge is not made by Intel")
 	}
-	deviceid, err := h.PCIReadDeviceID(pciHostbridge)
-	if err != nil {
+	if err := h.PCIReadConfigSpace(pciHostbridge, 2, &deviceid); err != nil {
 		return ret, err
 	}
 
@@ -233,7 +230,7 @@ func (h HwAPI) ReadHostBridgeDPR() (DMAProtectedRange, error) {
 
 	var u32 uint32
 
-	if err = h.PCIReadConfigSpace(tsegDev, dprOff, &u32); err != nil {
+	if err := h.PCIReadConfigSpace(tsegDev, dprOff, &u32); err != nil {
 		return ret, err
 	}
 

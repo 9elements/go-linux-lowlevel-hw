@@ -75,24 +75,6 @@ func (h HwAPI) PCIReadConfigSpace(d PCIDevice, off int, out interface{}) (err er
 	return
 }
 
-//PCIReadVendorID reads the device vendor ID from PCI config space
-func (h HwAPI) PCIReadVendorID(d PCIDevice) (id uint16, err error) {
-	if err = h.PCIReadConfigSpace(d, 0, &id); err != nil {
-		return 0, err
-	}
-
-	return
-}
-
-//PCIReadDeviceID reads the device ID from PCI config space
-func (h HwAPI) PCIReadDeviceID(d PCIDevice) (id uint16, err error) {
-	if err = h.PCIReadConfigSpace(d, 2, &id); err != nil {
-		return 0, err
-	}
-
-	return
-}
-
 //pciWriteConfigSpace writes to PCI config space from in
 func (h HwAPI) PCIWriteConfigSpace(d PCIDevice, off int, in interface{}) (err error) {
 	var path string

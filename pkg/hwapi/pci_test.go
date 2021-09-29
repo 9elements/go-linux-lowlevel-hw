@@ -37,15 +37,14 @@ func TestPCIQemu(t *testing.T) {
 		Device:   0x1f,
 		Function: 0,
 	}
-	reg16, err := h.PCIReadVendorID(d1ff0)
-	if err != nil {
+
+	if err := h.PCIReadConfigSpace(d1ff0, 0, &reg16); err != nil {
 		t.Errorf("PCIReadVendorID failed with error %v", err)
 	}
 	if reg16 != 0x8086 {
 		t.Errorf("Unexpected value: %v", reg16)
 	}
-	reg16, err = h.PCIReadDeviceID(d1ff0)
-	if err != nil {
+	if err := h.PCIReadConfigSpace(d1ff0, 2, &reg16); err != nil {
 		t.Errorf("PCIReadDeviceID failed with error %v", err)
 	}
 	if reg16 != 0x2918 {
@@ -63,7 +62,7 @@ func TestPCIQemu(t *testing.T) {
 	}
 	class |= uint16(reg8) << 8
 
-	if err = h.PCIReadConfigSpace(d0f0, 0xb, &reg8); err != nil {
+	if err := h.PCIReadConfigSpace(d0f0, 0xb, &reg8); err != nil {
 		t.Errorf("PCIReadConfig failed with error %v", err)
 	}
 	if reg8 != 6 {
@@ -71,7 +70,7 @@ func TestPCIQemu(t *testing.T) {
 	}
 	class |= uint16(reg8)
 
-	if err = h.PCIReadConfigSpace(d0f0, 0xb, &reg16); err != nil {
+	if err := h.PCIReadConfigSpace(d0f0, 0xb, &reg16); err != nil {
 		t.Errorf("PCIReadConfig failed with error %v", err)
 	}
 	if reg16 != class {
@@ -91,7 +90,7 @@ func TestPCIQemu(t *testing.T) {
 		t.Errorf("Unexpected value: %x", reg32)
 	}
 
-	if err = h.PCIReadConfigSpace(d1f0, 0x18, &reg32); err != nil {
+	if err := h.PCIReadConfigSpace(d1f0, 0x18, &reg32); err != nil {
 		t.Errorf("PCIReadConfig failed with error %v", err)
 	}
 	if reg32 == 0 {
@@ -107,21 +106,19 @@ func TestPCIQemu(t *testing.T) {
 	}
 
 	reg32 = 0xffffffff
-	err = h.PCIWriteConfigSpace(d1f0, 0x10, reg32)
-	if err != nil {
+	if err := h.PCIWriteConfigSpace(d1f0, 0x10, reg32); err != nil {
 		t.Errorf("PCIWriteConfig32 failed with error %v", err)
 	}
 
 	// check if bits are moving
-	if err = h.PCIReadConfigSpace(d1f0, 0x10, &reg32); err != nil {
+	if err := h.PCIReadConfigSpace(d1f0, 0x10, &reg32); err != nil {
 		t.Errorf("PCIReadConfig failed with error %v", err)
 	}
 	if reg32 == 0xfd000008 {
 		t.Errorf("Unexpected value: %x", reg32)
 	}
 
-	err = h.PCIWriteConfigSpace(d1f0, 0x10, backup)
-	if err != nil {
+	if err := h.PCIWriteConfigSpace(d1f0, 0x10, backup); err != nil {
 		t.Errorf("PCIWriteConfig32 failed with error %v", err)
 	}
 }
@@ -156,15 +153,13 @@ func TestPCIDeviceVendorIDQemu(t *testing.T) {
 		Device:   0x1f,
 		Function: 0,
 	}
-	reg16, err := h.PCIReadVendorID(d1ff0)
-	if err != nil {
+	if err := h.PCIReadConfigSpace(d1ff0, 0, &reg16); err != nil {
 		t.Errorf("PCIReadVendorID failed with error %v", err)
 	}
 	if reg16 != 0x8086 {
 		t.Errorf("Unexpected value: %v", reg16)
 	}
-	reg16, err = h.PCIReadDeviceID(d1ff0)
-	if err != nil {
+	if err := h.PCIReadConfigSpace(d1ff0, 2, &reg16); err != nil {
 		t.Errorf("PCIReadDeviceID failed with error %v", err)
 	}
 	if reg16 != 0x2918 {

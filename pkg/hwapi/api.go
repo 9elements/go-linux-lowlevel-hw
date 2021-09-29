@@ -40,8 +40,6 @@ type LowLevelHardwareInterfaces interface {
 	PCIEnumerateVisibleDevices(cb func(d PCIDevice) (abort bool)) (err error)
 	PCIReadConfigSpace(d PCIDevice, off int, out interface{}) error
 	PCIWriteConfigSpace(d PCIDevice, off int, val interface{}) error
-	PCIReadVendorID(d PCIDevice) (uint16, error)
-	PCIReadDeviceID(d PCIDevice) (uint16, error)
 
 	// hostbridge.go
 	ReadHostBridgeTseg() (uint32, uint32, error)

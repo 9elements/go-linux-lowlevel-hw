@@ -11,10 +11,16 @@ func main() {
 	h := hwapi.GetAPI()
 	if err := h.PCIEnumerateVisibleDevices(
 		func(d hwapi.PCIDevice) (abort bool) {
-			vend, _ := h.PCIReadVendorID(d)
-			devid, _ := h.PCIReadDeviceID(d)
+			var venid, devid uint16
+			if err := h.PCIReadConfigSpace(d, 0, &venid); err != nil {
+				fmt.Fprintf(os.Stderr, "%v", err)
+			}
+			if err := h.PCIReadConfigSpace(d, 2, &devid); err != nil {
+				fmt.Fprintf(os.Stderr, "%v", err)
+			}
+
 			fmt.Printf("Found device: %02x:%02x.%x [%04x:%04x]\n",
-				d.Bus, d.Device, d.Function, vend, devid)
+				d.Bus, d.Device, d.Function, venid, devid)
 			return false
 		}); err != nil {
 		fmt.Fprintf(os.Stderr, "PCIEnumerateVisibleDevices failed wiht: %v", err)

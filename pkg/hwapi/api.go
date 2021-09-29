@@ -39,12 +39,8 @@ type LowLevelHardwareInterfaces interface {
 
 	// pci.go
 	PCIEnumerateVisibleDevices(cb func(d PCIDevice) (abort bool)) (err error)
-	PCIReadConfig8(d PCIDevice, off int) (uint8, error)
-	PCIReadConfig16(d PCIDevice, off int) (uint16, error)
-	PCIReadConfig32(d PCIDevice, off int) (uint32, error)
-	PCIWriteConfig8(d PCIDevice, off int, val uint8) error
-	PCIWriteConfig16(d PCIDevice, off int, val uint16) error
-	PCIWriteConfig32(d PCIDevice, off int, val uint32) error
+	PCIReadConfigSpace(d PCIDevice, off int, out interface{}) error
+	PCIWriteConfigSpace(d PCIDevice, off int, val interface{}) error
 	PCIReadVendorID(d PCIDevice) (uint16, error)
 	PCIReadDeviceID(d PCIDevice) (uint16, error)
 

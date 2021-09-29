@@ -16,17 +16,18 @@ func TestPCIQemu(t *testing.T) {
 		Device:   0,
 		Function: 0,
 	}
-	reg16, err := h.PCIReadConfig16(d0f0, 0)
-	if err != nil {
+	var reg16 uint16
+	if err := h.PCIReadConfigSpace(d0f0, 0, &reg16); err != nil {
 		t.Errorf("PCIReadConfig failed with error %v", err)
 	}
+
 	if reg16 != 0x8086 {
 		t.Errorf("Unexpected value: %v", reg16)
 	}
-	reg16, err = h.PCIReadConfig16(d0f0, 2)
-	if err != nil {
+	if err := h.PCIReadConfigSpace(d0f0, 2, &reg16); err != nil {
 		t.Errorf("PCIReadConfig failed with error %v", err)
 	}
+
 	if reg16 != 0x29c0 {
 		t.Errorf("Unexpected value: %v", reg16)
 	}
@@ -36,7 +37,7 @@ func TestPCIQemu(t *testing.T) {
 		Device:   0x1f,
 		Function: 0,
 	}
-	reg16, err = h.PCIReadVendorID(d1ff0)
+	reg16, err := h.PCIReadVendorID(d1ff0)
 	if err != nil {
 		t.Errorf("PCIReadVendorID failed with error %v", err)
 	}
@@ -53,8 +54,8 @@ func TestPCIQemu(t *testing.T) {
 
 	var class uint16
 
-	reg8, err := h.PCIReadConfig8(d0f0, 0xc)
-	if err != nil {
+	var reg8 uint8
+	if err := h.PCIReadConfigSpace(d0f0, 0xc, &reg8); err != nil {
 		t.Errorf("PCIReadConfig failed with error %v", err)
 	}
 	if reg8 != 0 {
@@ -62,8 +63,7 @@ func TestPCIQemu(t *testing.T) {
 	}
 	class |= uint16(reg8) << 8
 
-	reg8, err = h.PCIReadConfig8(d0f0, 0xb)
-	if err != nil {
+	if err = h.PCIReadConfigSpace(d0f0, 0xb, &reg8); err != nil {
 		t.Errorf("PCIReadConfig failed with error %v", err)
 	}
 	if reg8 != 6 {
@@ -71,8 +71,7 @@ func TestPCIQemu(t *testing.T) {
 	}
 	class |= uint16(reg8)
 
-	reg16, err = h.PCIReadConfig16(d0f0, 0xb)
-	if err != nil {
+	if err = h.PCIReadConfigSpace(d0f0, 0xb, &reg16); err != nil {
 		t.Errorf("PCIReadConfig failed with error %v", err)
 	}
 	if reg16 != class {
@@ -84,24 +83,23 @@ func TestPCIQemu(t *testing.T) {
 		Device:   0x1,
 		Function: 0,
 	}
-	reg32, err := h.PCIReadConfig32(d1f0, 0x10)
-	if err != nil {
+	var reg32 uint32
+	if err := h.PCIReadConfigSpace(d1f0, 0x10, &reg32); err != nil {
 		t.Errorf("PCIReadConfig failed with error %v", err)
 	}
 	if reg32 == 0 {
 		t.Errorf("Unexpected value: %x", reg32)
 	}
 
-	reg32, err = h.PCIReadConfig32(d1f0, 0x18)
-	if err != nil {
+	if err = h.PCIReadConfigSpace(d1f0, 0x18, &reg32); err != nil {
 		t.Errorf("PCIReadConfig failed with error %v", err)
 	}
 	if reg32 == 0 {
 		t.Errorf("Unexpected value: %x", reg32)
 	}
 
-	backup, err := h.PCIReadConfig32(d1f0, 0x10)
-	if err != nil {
+	var backup uint32
+	if err := h.PCIReadConfigSpace(d1f0, 0x10, &backup); err != nil {
 		t.Errorf("PCIReadConfig failed with error %v", err)
 	}
 	if reg32 == 0 || reg32 == 0xffffffff {
@@ -109,21 +107,20 @@ func TestPCIQemu(t *testing.T) {
 	}
 
 	reg32 = 0xffffffff
-	err = h.PCIWriteConfig32(d1f0, 0x10, reg32)
+	err = h.PCIWriteConfigSpace(d1f0, 0x10, reg32)
 	if err != nil {
 		t.Errorf("PCIWriteConfig32 failed with error %v", err)
 	}
 
 	// check if bits are moving
-	reg32, err = h.PCIReadConfig32(d1f0, 0x10)
-	if err != nil {
+	if err = h.PCIReadConfigSpace(d1f0, 0x10, &reg32); err != nil {
 		t.Errorf("PCIReadConfig failed with error %v", err)
 	}
 	if reg32 == 0xfd000008 {
 		t.Errorf("Unexpected value: %x", reg32)
 	}
 
-	err = h.PCIWriteConfig32(d1f0, 0x10, backup)
+	err = h.PCIWriteConfigSpace(d1f0, 0x10, backup)
 	if err != nil {
 		t.Errorf("PCIWriteConfig32 failed with error %v", err)
 	}
@@ -140,15 +137,14 @@ func TestPCIDeviceVendorIDQemu(t *testing.T) {
 		Device:   0,
 		Function: 0,
 	}
-	reg16, err := h.PCIReadConfig16(d0f0, 0)
-	if err != nil {
+	var reg16 uint16
+	if err := h.PCIReadConfigSpace(d0f0, 0, &reg16); err != nil {
 		t.Errorf("PCIReadConfig failed with error %v", err)
 	}
 	if reg16 != 0x8086 {
 		t.Errorf("Unexpected value: %v", reg16)
 	}
-	reg16, err = h.PCIReadConfig16(d0f0, 2)
-	if err != nil {
+	if err := h.PCIReadConfigSpace(d0f0, 2, &reg16); err != nil {
 		t.Errorf("PCIReadConfig failed with error %v", err)
 	}
 	if reg16 != 0x29c0 {
@@ -160,7 +156,7 @@ func TestPCIDeviceVendorIDQemu(t *testing.T) {
 		Device:   0x1f,
 		Function: 0,
 	}
-	reg16, err = h.PCIReadVendorID(d1ff0)
+	reg16, err := h.PCIReadVendorID(d1ff0)
 	if err != nil {
 		t.Errorf("PCIReadVendorID failed with error %v", err)
 	}
@@ -187,30 +183,28 @@ func TestPCIBusMasterQEMU(t *testing.T) {
 		Device:   0x1,
 		Function: 0,
 	}
-
-	backup, err := h.PCIReadConfig8(d1f0, 4)
-	if err != nil {
+	var backup uint8
+	if err := h.PCIReadConfigSpace(d1f0, 4, &backup); err != nil {
 		t.Errorf("PCIReadConfig8 failed with error %v", err)
 	}
 
 	reg8 := backup ^ 4
-	err = h.PCIWriteConfig8(d1f0, 4, reg8)
+	err := h.PCIWriteConfigSpace(d1f0, 4, reg8)
 	if err != nil {
-		if err := h.PCIWriteConfig8(d1f0, 4, backup); err != nil {
+		if err := h.PCIWriteConfigSpace(d1f0, 4, backup); err != nil {
 			t.Error(err)
 		}
 		t.Errorf("PCIWriteConfig8 failed with error %v", err)
 	}
 
-	reg8, err = h.PCIReadConfig8(d1f0, 4)
-	if err != nil {
-		if err := h.PCIWriteConfig8(d1f0, 4, backup); err != nil {
+	if err = h.PCIReadConfigSpace(d1f0, 4, &reg8); err != nil {
+		if err := h.PCIWriteConfigSpace(d1f0, 4, backup); err != nil {
 			t.Error(err)
 		}
 		t.Errorf("PCIReadConfig8 failed with error %v", err)
 	}
 	if reg8 == backup {
-		if err := h.PCIWriteConfig8(d1f0, 4, backup); err != nil {
+		if err := h.PCIWriteConfigSpace(d1f0, 4, backup); err != nil {
 			t.Error(err)
 		}
 		t.Errorf("PCIWriteConfig8 failed. Register content is unchanged.")
@@ -231,29 +225,27 @@ func TestPCIBusMaster2QEMU(t *testing.T) {
 	var err error
 	var backup uint16
 
-	backup, err = h.PCIReadConfig16(d1f0, 4)
-	if err != nil {
+	if err := h.PCIReadConfigSpace(d1f0, 4, &backup); err != nil {
 		t.Errorf("PCIReadConfig16 failed with error %v", err)
 	}
 
-	err = h.PCIWriteConfig8(d1f0, 5, 0xff)
+	err = h.PCIWriteConfigSpace(d1f0, 5, 0xff)
 	if err != nil {
 		t.Errorf("PCIWriteConfig8 failed with error %v", err)
 	}
-	reg16, err := h.PCIReadConfig16(d1f0, 4)
-	if err != nil {
+	var reg16 uint16
+	if err := h.PCIReadConfigSpace(d1f0, 4, &reg16); err != nil {
 		t.Errorf("PCIReadConfig16 failed with error %v", err)
 	}
 	if reg16 == backup {
 		t.Errorf("PCIWriteConfig8 failed. Register content is unchanged.")
 	}
 	// restore register
-	err = h.PCIWriteConfig16(d1f0, 4, backup)
+	err = h.PCIWriteConfigSpace(d1f0, 4, backup)
 	if err != nil {
 		t.Errorf("PCIWriteConfig16 failed with error %v", err)
 	}
-	reg16, err = h.PCIReadConfig16(d1f0, 4)
-	if err != nil {
+	if err = h.PCIReadConfigSpace(d1f0, 4, &reg16); err != nil {
 		t.Errorf("PCIReadConfig16 failed with error %v", err)
 	}
 	if reg16 != backup {

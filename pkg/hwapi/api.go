@@ -43,8 +43,7 @@ type LowLevelHardwareInterfaces interface {
 	ReadPCR(tpmCon *TPM, pcr uint32) ([]byte, error)
 
 	// acpi.go
-	GetACPITableDevMem(n string) ([]byte, error)
-	GetACPITableSysFS(n string) ([]byte, error)
+	GetACPITable(n string) ([]byte, error)
 
 	// smbios.go
 	IterateOverSMBIOSTables(n uint8, callback func(s *smbios.Structure) bool) (ret bool, err error)

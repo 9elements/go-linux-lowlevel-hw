@@ -20,7 +20,7 @@ func TestE820ReservedCheck(t *testing.T) {
 	}
 
 	for _, s := range ranges {
-		reserved, err := h.IsReservedInE820(s.start, s.end)
+		reserved, err := IsReservedInE820(h, s.start, s.end)
 		if err != nil {
 			t.Errorf("Checking range %x-%x failed: %s", s.start, s.end, err)
 		}

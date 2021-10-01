@@ -9,7 +9,7 @@ import (
 )
 
 //iterateOverE820Ranges iterates over all e820 entries and invokes the callback for every matching type
-func iterateOverE820Ranges(t string, callback func(start uint64, end uint64) bool) (bool, error) {
+func (h HwAPI) IterateOverE820Ranges(target string, callback func(start uint64, end uint64) bool) (bool, error) {
 
 	dir, err := os.Open("/sys/firmware/memmap")
 	if err != nil {
@@ -29,7 +29,7 @@ func iterateOverE820Ranges(t string, callback func(start uint64, end uint64) boo
 			if err != nil {
 				continue
 			}
-			if strings.Contains(strings.ToLower(string(buf)), strings.ToLower(t)) {
+			if strings.Contains(strings.ToLower(string(buf)), strings.ToLower(target)) {
 				path := fmt.Sprintf("/sys/firmware/memmap/%s/start", subdir.Name())
 				thisStart, err := readHexInteger(path)
 				if err != nil {
@@ -53,8 +53,8 @@ func iterateOverE820Ranges(t string, callback func(start uint64, end uint64) boo
 }
 
 // UsableMemoryAbove4G returns the usable memory above 4GiB
-func (h HwAPI) UsableMemoryAbove4G() (size uint64, err error) {
-	_, err = iterateOverE820Ranges("system ram", func(rstart uint64, rend uint64) bool {
+func UsableMemoryAbove4G(l LowLevelHardwareInterfaces) (size uint64, err error) {
+	_, err = l.IterateOverE820Ranges("system ram", func(rstart uint64, rend uint64) bool {
 		if rstart > 0xffffffff {
 			size += (rend - rstart)
 		}
@@ -65,8 +65,8 @@ func (h HwAPI) UsableMemoryAbove4G() (size uint64, err error) {
 }
 
 // UsableMemoryBelow4G returns the usable memory below 4GiB
-func (h HwAPI) UsableMemoryBelow4G() (size uint64, err error) {
-	_, err = iterateOverE820Ranges("system ram", func(rstart uint64, rend uint64) bool {
+func UsableMemoryBelow4G(l LowLevelHardwareInterfaces) (size uint64, err error) {
+	_, err = l.IterateOverE820Ranges("system ram", func(rstart uint64, rend uint64) bool {
 		if rstart <= 0xffffffff {
 			size += (rend - rstart)
 		}
@@ -79,12 +79,12 @@ func (h HwAPI) UsableMemoryBelow4G() (size uint64, err error) {
 //IsReservedInE820 reads the e820 table exported via /sys/firmware/memmap and checks whether
 // the range [start; end] is marked as reserved. Returns true if it is reserved,
 // false if not.
-func (h HwAPI) IsReservedInE820(start uint64, end uint64) (bool, error) {
+func IsReservedInE820(l LowLevelHardwareInterfaces, start uint64, end uint64) (bool, error) {
 	if start > end {
 		return false, fmt.Errorf("invalid range")
 	}
 
-	contains, err := iterateOverE820Ranges("reserved", func(rstart uint64, rend uint64) bool {
+	contains, err := l.IterateOverE820Ranges("reserved", func(rstart uint64, rend uint64) bool {
 		if rstart <= start && rend >= end {
 			return true
 		}

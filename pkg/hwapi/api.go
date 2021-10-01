@@ -16,9 +16,7 @@ type LowLevelHardwareInterfaces interface {
 	CPULogCount() uint32
 
 	// e820.go
-	IsReservedInE820(start uint64, end uint64) (bool, error)
-	UsableMemoryAbove4G() (size uint64, err error)
-	UsableMemoryBelow4G() (size uint64, err error)
+	IterateOverE820Ranges(target string, callback func(start uint64, end uint64) bool) (bool, error)
 
 	// iommu.go
 	LookupIOAddress(addr uint64, regs VTdRegisters) ([]uint64, error)

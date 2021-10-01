@@ -299,8 +299,8 @@ func lookupIOScalable(addr, rootTblAddr uint64) ([]uint64, error) {
 }
 
 // AddressRangesIsDMAProtected returns true if the address is DMA protected by the IOMMU
-func (h HwAPI) AddressRangesIsDMAProtected(first, end uint64) (bool, error) {
-	regs, err := readVTdRegs(h)
+func AddressRangesIsDMAProtected(l LowLevelHardwareInterfaces, first, end uint64) (bool, error) {
+	regs, err := readVTdRegs(l)
 	if err != nil {
 		return false, err
 	}
@@ -319,7 +319,7 @@ func (h HwAPI) AddressRangesIsDMAProtected(first, end uint64) (bool, error) {
 	}
 
 	for addr := first & 0xffffffffffff0000; addr < end; addr += 4096 {
-		vas, err := h.LookupIOAddress(addr, regs)
+		vas, err := l.LookupIOAddress(addr, regs)
 		if err != nil {
 			return false, err
 		}

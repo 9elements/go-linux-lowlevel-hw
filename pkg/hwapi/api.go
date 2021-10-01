@@ -30,10 +30,6 @@ type LowLevelHardwareInterfaces interface {
 	PCIReadConfigSpace(d PCIDevice, off int, len int) ([]byte, error)
 	PCIWriteConfigSpace(d PCIDevice, off int, val interface{}) error
 
-	// hostbridge.go
-	ReadHostBridgeTseg() (uint32, uint32, error)
-	ReadHostBridgeDPR() (DMAProtectedRange, error)
-
 	// phys.go
 	ReadPhys(addr int64, data UintN) error
 	ReadPhysBuf(addr int64, buf []byte) error

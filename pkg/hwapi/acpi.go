@@ -64,7 +64,7 @@ type acpiXsdt struct {
 	//Entry           []uint64 count depend on Length field
 }
 
-func (h HwAPI) GetACPITableSysFS(n string) ([]byte, error) {
+func GetACPITableSysFS(h LowLevelHardwareInterfaces, n string) ([]byte, error) {
 	buf, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", acpiSysfsPath, n))
 	if err != nil {
 		return nil, fmt.Errorf("cannot access sysfs path %s: %s", acpiSysfsPath, err)
@@ -285,7 +285,7 @@ func scanReservedMem(l LowLevelHardwareInterfaces) ([]byte, ACPIRsdp, error) {
 
 	buf := make([]byte, binary.Size(rsdp))
 
-	_, err := iterateOverE820Ranges("ACPI Tables", func(start uint64, end uint64) bool {
+	_, err := l.IterateOverE820Ranges("ACPI Tables", func(start uint64, end uint64) bool {
 		for i := int64(start); i < int64(end)-int64(binary.Size(rsdp)); i += 16 {
 			err := l.ReadPhysBuf(i, buf)
 			if err != nil {
@@ -405,7 +405,7 @@ func getACPITableDevMemRSDP(l LowLevelHardwareInterfaces) ([]byte, ACPIRsdp, err
 	return nil, rsdp, fmt.Errorf("RSDP not found")
 }
 
-func (h HwAPI) GetACPITableDevMem(n string) ([]byte, error) {
+func GetACPITableDevMem(h LowLevelHardwareInterfaces, n string) ([]byte, error) {
 	rsdpBuf, rsdp, err := getACPITableDevMemRSDP(h)
 	if err != nil {
 		return nil, err
@@ -505,9 +505,9 @@ func (h HwAPI) GetACPITable(n string) ([]byte, error) {
 	}
 
 	// Try SYSFS first, but it doesn't has RSDP
-	tbl, err := h.GetACPITableSysFS(n)
+	tbl, err := GetACPITableSysFS(h, n)
 	if err != nil {
-		tbl, err = h.GetACPITableDevMem(n)
+		tbl, err = GetACPITableDevMem(h, n)
 	}
 	return tbl, err
 }

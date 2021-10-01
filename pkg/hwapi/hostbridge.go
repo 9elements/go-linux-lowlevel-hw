@@ -105,7 +105,7 @@ var (
 )
 
 //ReadHostBridgeTseg returns TSEG base and TSEG limit
-func (h HwAPI) ReadHostBridgeTseg() (uint32, uint32, error) {
+func ReadHostBridgeTseg(h LowLevelHardwareInterfaces) (uint32, uint32, error) {
 	var tsegBaseOff int
 	var tsegLimitOff int
 	var tsegBroadwellDEfix bool
@@ -184,7 +184,7 @@ type DMAProtectedRange struct {
 }
 
 //ReadHostBridgeDPR reads the DPR register from PCI config space
-func (h HwAPI) ReadHostBridgeDPR() (DMAProtectedRange, error) {
+func ReadHostBridgeDPR(h LowLevelHardwareInterfaces) (DMAProtectedRange, error) {
 	var dprOff int
 	var devicenum int
 	var ret DMAProtectedRange

@@ -46,8 +46,6 @@ type LowLevelHardwareInterfaces interface {
 
 	// smbios.go
 	IterateOverSMBIOSTables(n uint8, callback func(s *smbios.Structure) bool) (ret bool, err error)
-	IterateOverSMBIOSTablesType0(callback func(t0 *SMBIOSType0) bool) (ret bool, err error)
-	IterateOverSMBIOSTablesType17(callback func(t17 *SMBIOSType17) bool) (ret bool, err error)
 }
 
 //HwAPI The context object for low level hardware api

@@ -145,7 +145,7 @@ func (h HwAPI) IterateOverSMBIOSTables(n uint8, callback func(s *smbios.Structur
 }
 
 // IterateOverSMBIOSTablesType0 returns all SMBIOS tables of Type0 decoded
-func (h HwAPI) IterateOverSMBIOSTablesType0(callback func(t0 *SMBIOSType0) bool) (ret bool, err error) {
+func IterateOverSMBIOSTablesType0(h LowLevelHardwareInterfaces, callback func(t0 *SMBIOSType0) bool) (ret bool, err error) {
 	var err2 error
 	ret, err = h.IterateOverSMBIOSTables(uint8(0), func(s *smbios.Structure) bool {
 		var decoded SMBIOSType0
@@ -205,7 +205,7 @@ func (h HwAPI) IterateOverSMBIOSTablesType0(callback func(t0 *SMBIOSType0) bool)
 }
 
 // IterateOverSMBIOSTablesType17 returns all SMBIOS tables of Type17 decoded
-func (h HwAPI) IterateOverSMBIOSTablesType17(callback func(t17 *SMBIOSType17) bool) (ret bool, err error) {
+func IterateOverSMBIOSTablesType17(h LowLevelHardwareInterfaces, callback func(t17 *SMBIOSType17) bool) (ret bool, err error) {
 	var err2 error
 	ret, err = h.IterateOverSMBIOSTables(uint8(17), func(s *smbios.Structure) bool {
 		var decoded SMBIOSType17

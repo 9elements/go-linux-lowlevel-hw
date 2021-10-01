@@ -11,7 +11,7 @@ func TestSMBIOSQemu(t *testing.T) {
 		t.Skip("Not running on QEMU")
 	}
 	count := 0
-	_, err := h.IterateOverSMBIOSTablesType0(func(s *SMBIOSType0) bool {
+	_, err := IterateOverSMBIOSTablesType0(h, func(s *SMBIOSType0) bool {
 		count++
 		if s.Type != 0 {
 			t.Errorf("Got unexpected type %d", s.Type)
@@ -44,7 +44,7 @@ func TestSMBIOSType17(t *testing.T) {
 		t.Skip("Not running on QEMU")
 	}
 	count := 0
-	_, err := h.IterateOverSMBIOSTablesType17(func(s *SMBIOSType17) bool {
+	_, err := IterateOverSMBIOSTablesType17(h, func(s *SMBIOSType17) bool {
 		count++
 		if s.Type != 17 {
 			t.Errorf("Got unexpected type %d", s.Type)

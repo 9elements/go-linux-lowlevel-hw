@@ -1,6 +1,7 @@
 package hwapi
 
 import (
+	"encoding/binary"
 	"fmt"
 )
 
@@ -109,21 +110,22 @@ func (h HwAPI) ReadHostBridgeTseg() (uint32, uint32, error) {
 	var tsegLimitOff int
 	var tsegBroadwellDEfix bool
 	var devicenum int
-	var vendorid, deviceid uint16
 
-	if err := h.PCIReadConfigSpace(pciHostbridge, 0, &vendorid); err != nil {
+	vendorid, err := h.PCIReadConfigSpace(pciHostbridge, 0, 2)
+	if err != nil {
 		return 0, 0, err
 	}
-	if vendorid != 0x8086 {
+	if binary.LittleEndian.Uint16(vendorid) != 0x8086 {
 		return 0, 0, fmt.Errorf("hostbridge is not made by Intel")
 	}
-	if err := h.PCIReadConfigSpace(pciHostbridge, 2, &deviceid); err != nil {
+	deviceid, err := h.PCIReadConfigSpace(pciHostbridge, 2, 2)
+	if err != nil {
 		return 0, 0, err
 	}
 
 	var found bool
 	for _, id := range HostbridgeIDsSandyCompatible {
-		if id == deviceid {
+		if id == binary.LittleEndian.Uint16(deviceid) {
 			found = true
 			tsegBaseOff = TsegPCIRegSandyAndNewer
 			tsegLimitOff = TsegPCIRegSandyAndNewer + 4
@@ -133,7 +135,7 @@ func (h HwAPI) ReadHostBridgeTseg() (uint32, uint32, error) {
 	}
 	if !found {
 		for _, id := range HostbridgeIDsBroadwellDE {
-			if id == deviceid {
+			if id == binary.LittleEndian.Uint16(deviceid) {
 				found = true
 				tsegBroadwellDEfix = true
 				tsegBaseOff = TSEGPCIBroadwellde
@@ -154,23 +156,22 @@ func (h HwAPI) ReadHostBridgeTseg() (uint32, uint32, error) {
 		Function: 0,
 	}
 
-	var tsegbase uint32
-	var tseglimit uint32
-
-	if err := h.PCIReadConfigSpace(tsegDev, tsegBaseOff, &tsegbase); err != nil {
+	tsegbase, err := h.PCIReadConfigSpace(tsegDev, tsegBaseOff, 4)
+	if err != nil {
 		return 0, 0, err
 	}
 
-	if err := h.PCIReadConfigSpace(tsegDev, tsegLimitOff, &tseglimit); err != nil {
+	tseglimit, err := h.PCIReadConfigSpace(tsegDev, tsegLimitOff, 4)
+	if err != nil {
 		return 0, 0, err
 	}
-
+	var limit uint32
 	if tsegBroadwellDEfix {
 		// On BroadwellDe TSEG limit lower 19bits are don't care, thus add 1 MiB.
-		tseglimit += 1024 * 1024
+		limit = binary.LittleEndian.Uint32(tseglimit) + 1024*1024
 	}
 
-	return tsegbase, tseglimit, nil
+	return binary.LittleEndian.Uint32(tsegbase), limit, nil
 }
 
 //DMAProtectedRange encodes the DPR register
@@ -187,20 +188,22 @@ func (h HwAPI) ReadHostBridgeDPR() (DMAProtectedRange, error) {
 	var dprOff int
 	var devicenum int
 	var ret DMAProtectedRange
-	var vendorid, deviceid uint16
-	if err := h.PCIReadConfigSpace(pciHostbridge, 0, &vendorid); err != nil {
+
+	vendorid, err := h.PCIReadConfigSpace(pciHostbridge, 0, 2)
+	if err != nil {
 		return ret, err
 	}
-	if vendorid != 0x8086 {
+	if binary.LittleEndian.Uint16(vendorid) != 0x8086 {
 		return ret, fmt.Errorf("hostbridge is not made by Intel")
 	}
-	if err := h.PCIReadConfigSpace(pciHostbridge, 2, &deviceid); err != nil {
+	deviceid, err := h.PCIReadConfigSpace(pciHostbridge, 2, 2)
+	if err != nil {
 		return ret, err
 	}
 
 	var found bool
 	for _, id := range HostbridgeIDsSandyCompatible {
-		if id == deviceid {
+		if id == binary.LittleEndian.Uint16(deviceid) {
 			found = true
 			dprOff = DPRPCIRegSandyAndNewer
 			devicenum = 0
@@ -209,7 +212,7 @@ func (h HwAPI) ReadHostBridgeDPR() (DMAProtectedRange, error) {
 	}
 	if !found {
 		for _, id := range HostbridgeIDsBroadwellDE {
-			if id == deviceid {
+			if id == binary.LittleEndian.Uint16(deviceid) {
 				found = true
 				dprOff = DPRPciRegBroadwellDE
 				devicenum = 5
@@ -228,15 +231,14 @@ func (h HwAPI) ReadHostBridgeDPR() (DMAProtectedRange, error) {
 		Function: 0,
 	}
 
-	var u32 uint32
-
-	if err := h.PCIReadConfigSpace(tsegDev, dprOff, &u32); err != nil {
+	u32, err := h.PCIReadConfigSpace(tsegDev, dprOff, 4)
+	if err != nil {
 		return ret, err
 	}
 
-	ret.Lock = u32&1 != 0
-	ret.Size = uint8((u32 >> 4) & 0xff)   // 11:4
-	ret.Top = uint16((u32 >> 20) & 0xfff) // 31:20
+	ret.Lock = binary.LittleEndian.Uint32(u32)&1 != 0
+	ret.Size = uint8((binary.LittleEndian.Uint32(u32) >> 4) & 0xff)   // 11:4
+	ret.Top = uint16((binary.LittleEndian.Uint32(u32) >> 20) & 0xfff) // 31:20
 
 	return ret, nil
 }

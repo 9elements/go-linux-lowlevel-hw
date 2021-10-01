@@ -55,24 +55,28 @@ func (h HwAPI) PCIEnumerateVisibleDevices(cb func(d PCIDevice) (abort bool)) (er
 }
 
 //pciReadConfigSpace reads from PCI config space into out
-func (h HwAPI) PCIReadConfigSpace(d PCIDevice, off int, out interface{}) (err error) {
+func (h HwAPI) PCIReadConfigSpace(d PCIDevice, off int, lenBytes int) ([]byte, error) {
 	var path string
 	var f *os.File
 	path = fmt.Sprintf("/sys/bus/pci/devices/0000:%02x:%02x.%1x/config", d.Bus, d.Device, d.Function)
 
-	f, err = os.OpenFile(path, os.O_RDONLY, 0)
+	f, err := os.OpenFile(path, os.O_RDONLY, 0)
 	if err != nil {
-		return
+		return nil, err
 	}
 	defer f.Close()
 
 	_, err = f.Seek(int64(off), io.SeekStart)
 	if err != nil {
-		return
+		return nil, err
 	}
-	err = binary.Read(f, binary.LittleEndian, out)
+	ret := make([]byte, lenBytes)
+	err = binary.Read(f, binary.LittleEndian, &ret)
+	if err != nil {
+		return nil, err
+	}
 
-	return
+	return ret, nil
 }
 
 //pciWriteConfigSpace writes to PCI config space from in

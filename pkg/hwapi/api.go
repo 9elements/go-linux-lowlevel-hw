@@ -25,20 +25,11 @@ type LowLevelHardwareInterfaces interface {
 	AddressRangesIsDMAProtected(first, end uint64) (bool, error)
 
 	// msr.go
-	ReadMSR(msr int64, core int) (uint64, error)
-
-	// msr_intel.go
-	HasSMRR() (bool, error)
-	GetSMRRInfo() (SMRR, error)
-	IA32FeatureControlIsLocked() (bool, error)
-	IA32PlatformID() (uint64, error)
-	AllowsVMXInSMX() (bool, error)
-	TXTLeavesAreEnabled() (bool, error)
-	IA32DebugInterfaceEnabledOrLocked() (*IA32Debug, error)
+	ReadMSR(msr int64) []uint64
 
 	// pci.go
 	PCIEnumerateVisibleDevices(cb func(d PCIDevice) (abort bool)) (err error)
-	PCIReadConfigSpace(d PCIDevice, off int, out interface{}) error
+	PCIReadConfigSpace(d PCIDevice, off int, len int) ([]byte, error)
 	PCIWriteConfigSpace(d PCIDevice, off int, val interface{}) error
 
 	// hostbridge.go

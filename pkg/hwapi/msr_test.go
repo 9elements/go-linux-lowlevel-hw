@@ -39,25 +39,20 @@ func TestReadMSR(t *testing.T) {
 		{"IA32_PLATFORM_ID", MsrPlatformID},
 	}
 	for _, test := range tests {
-		var val, oldval uint64
-		numCores := runtime.NumCPU()
-		for i := 0; i < numCores; i++ {
-			val, err = h.ReadMSR(test.msr, i)
-			if err != nil {
-				t.Errorf("ReadMSR for MSR %s failed with %v", test.name, err)
-			}
-			if i != 0 {
-				if val != oldval {
-					t.Errorf("MSR value are not the same for all cores. Core: %d, Value: 0x%x, Previous value: 0x%x", i, val, oldval)
+		vals := h.ReadMSR(test.msr)
+
+		for iterator, value := range vals {
+			if iterator < len(vals) && value != vals[iterator+1] {
+				if value != vals[iterator+1] {
+					t.Errorf("MSR value are not the same for all cores. Core: %d, Value: 0x%x, Previous value: 0x%x", iterator, value, vals[iterator+1])
+				}
+				if value == 0 || vals[iterator+1] == 0xffffffffffffffff {
+					t.Errorf("ReadMSR got unexpected value for MSR %s %v", test.name, vals)
 				}
 			}
-			oldval = val
-		}
-
-		if val == 0 || val == 0xffffffffffffffff {
-			t.Errorf("ReadMSR got unexpected value for MSR %s %v", test.name, val)
 		}
 	}
+
 }
 
 func TestReadMSRTimeStampCounter(t *testing.T) {
@@ -67,22 +62,17 @@ func TestReadMSRTimeStampCounter(t *testing.T) {
 		t.Skip("Not enough permissions to do test")
 	}
 	if runtime.GOARCH == "amd64" && cpuid.HasFeature(cpuid.TSC) {
-		timestamp1, err := h.ReadMSR(TimeStampCounter, 0)
-		if err != nil {
-			t.Errorf("ReadMSR for MSR IA32_TIMESTAMP_COUNTER failed with %v", err)
-		}
-		if timestamp1 == 0 {
+		timestamp1 := h.ReadMSR(TimeStampCounter)
+
+		if timestamp1[0] == 0 {
 			t.Errorf("ReadMSR got unexpected value for MSR IA32_TIMESTAMP_COUNTER: %v", timestamp1)
 		}
 		time.Sleep(time.Millisecond)
-		timestamp2, err := h.ReadMSR(TimeStampCounter, 0)
-		if err != nil {
-			t.Errorf("ReadMSR for MSR IA32_TIMESTAMP_COUNTER failed with %v", err)
-		}
-		if timestamp2 == 0 {
+		timestamp2 := h.ReadMSR(TimeStampCounter)
+		if timestamp2[0] == 0 {
 			t.Errorf("ReadMSR got unexpected value for MSR IA32_TIMESTAMP_COUNTER: %v", timestamp2)
 		}
-		if timestamp1 == timestamp2 {
+		if timestamp1[0] == timestamp2[0] {
 			t.Errorf("Timestamps are equal, but shouldn't be")
 		}
 	}
@@ -95,22 +85,12 @@ func TestReadMSREFER(t *testing.T) {
 		t.Skip("Not enough permissions to do test")
 	}
 	if runtime.GOARCH == "amd64" {
-		numCores := runtime.NumCPU()
-		var val, oldval uint64
-		for i := 0; i < numCores; i++ {
-			val, err := h.ReadMSR(Ia32Efer, i)
-			if err != nil {
-				t.Errorf("ReadMSRAllCores for MSR IA32_EFER failed with %v", err)
+		vals := h.ReadMSR(Ia32Efer)
+
+		for iterator, value := range vals {
+			if iterator < len(vals) && value != vals[iterator+1] {
+				t.Errorf("MSR value are not the same for all cores. Core: %d, Value: 0x%x, Next value: 0x%x", iterator, value, vals[iterator+1])
 			}
-			if i != 0 {
-				if val != oldval {
-					t.Errorf("MSR value are not the same for all cores. Core: %d, Value: 0x%x, Previous value: 0x%x", i, val, oldval)
-				}
-			}
-			oldval = val
-		}
-		if val == 0 {
-			t.Errorf("ReadMSRAllCores got unexpected value for MSR IA32_EFER: %v", val)
 		}
 	}
 }
@@ -124,13 +104,13 @@ func TestSMRR(t *testing.T) {
 		t.Skip("Not enough permissions to do test")
 	}
 
-	has, err := h.HasSMRR()
+	has, err := HasSMRR(h)
 	if err != nil {
 		t.Errorf("HasSMRR() failed: %v", err)
 	} else if has {
 		t.Log("System has SMRR")
 
-		got, err := h.GetSMRRInfo()
+		got, err := GetSMRRInfo(h)
 
 		if err != nil {
 			t.Errorf("GetSMRRInfo() failed: %v", err)

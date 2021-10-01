@@ -20,7 +20,6 @@ type LowLevelHardwareInterfaces interface {
 
 	// iommu.go
 	LookupIOAddress(addr uint64, regs VTdRegisters) ([]uint64, error)
-	AddressRangesIsDMAProtected(first, end uint64) (bool, error)
 
 	// msr.go
 	ReadMSR(msr int64) []uint64

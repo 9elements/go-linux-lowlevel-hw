@@ -1,3 +1,4 @@
+//go:build amd64
 // +build amd64
 
 // Package hwapi provides access to low level hardware

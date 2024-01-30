@@ -1,5 +1,9 @@
 package hwapi
 
+import (
+	"fmt"
+)
+
 //Model specific registers
 const (
 	msrSMBase             int64 = 0x9e //nolint
@@ -21,7 +25,9 @@ type IA32Debug struct {
 //HasSMRR returns true if the CPU supports SMRR
 func HasSMRR(h LowLevelHardwareInterfaces) (bool, error) {
 	mtrrcap := h.ReadMSR(msrMTRRCap)
-
+	if len(mtrrcap) == 0 {
+		return false, fmt.Errorf("Received nothing reading MTRR capability MSR")
+	}
 	return (mtrrcap[0]>>11)&1 != 0, nil
 }
 
@@ -37,8 +43,14 @@ func GetSMRRInfo(h LowLevelHardwareInterfaces) (SMRR, error) {
 	var ret SMRR
 
 	smrrPhysbase := h.ReadMSR(msrSMRRPhysBase)
+	if len(smrrPhysbase) == 0 {
+		return ret, fmt.Errorf("Received nothing reading SMRR physical base MSR")
+	}
 
 	smrrPhysmask := h.ReadMSR(msrSMRRPhysMask)
+	if len(smrrPhysmask) == 0 {
+		return ret, fmt.Errorf("Received nothing reading SMRR physical mask MSR")
+	}
 
 	ret.Active = (smrrPhysmask[0]>>11)&1 != 0
 	ret.PhysBase = (smrrPhysbase[0] >> 12) & 0xfffff
@@ -50,21 +62,27 @@ func GetSMRRInfo(h LowLevelHardwareInterfaces) (SMRR, error) {
 //IA32FeatureControlIsLocked returns true if the IA32_FEATURE_CONTROL msr is locked
 func IA32FeatureControlIsLocked(h LowLevelHardwareInterfaces) (bool, error) {
 	featCtrl := h.ReadMSR(msrFeatureControl)
-
+	if len(featCtrl) == 0 {
+		return false, fmt.Errorf("Received nothing reading feature control MSR")
+	}
 	return featCtrl[0]&1 != 0, nil
 }
 
 //IA32PlatformID returns the IA32_PLATFORM_ID msr
 func IA32PlatformID(h LowLevelHardwareInterfaces) (uint64, error) {
 	pltID := h.ReadMSR(msrPlatformID)
-
+	if len(pltID) == 0 {
+		return 0, fmt.Errorf("Received nothing reading platform ID MSR")
+	}
 	return pltID[0], nil
 }
 
 //AllowsVMXInSMX returns true if VMX is allowed in SMX
 func AllowsVMXInSMX(h LowLevelHardwareInterfaces) (bool, error) {
 	featCtrl := h.ReadMSR(msrFeatureControl)
-
+	if len(featCtrl) == 0 {
+		return false, fmt.Errorf("Received nothing reading feature control MSR")
+	}
 	var mask uint64 = (1 << 1) & (1 << 5) & (1 << 6)
 	return (mask & featCtrl[0]) == mask, nil
 }
@@ -72,7 +90,9 @@ func AllowsVMXInSMX(h LowLevelHardwareInterfaces) (bool, error) {
 //TXTLeavesAreEnabled returns true if all TXT leaves are enabled
 func TXTLeavesAreEnabled(h LowLevelHardwareInterfaces) (bool, error) {
 	featCtrl := h.ReadMSR(msrFeatureControl)
-
+	if len(featCtrl) == 0 {
+		return false, fmt.Errorf("Received nothing reading feature control MSR")
+	}
 	txtBits := (featCtrl[0] >> 8) & 0x1ff
 	return (txtBits&0xff == 0xff) || (txtBits&0x100 == 0x100), nil
 }
@@ -81,7 +101,9 @@ func TXTLeavesAreEnabled(h LowLevelHardwareInterfaces) (bool, error) {
 func IA32DebugInterfaceEnabledOrLocked(h LowLevelHardwareInterfaces) (*IA32Debug, error) {
 	var debugMSR IA32Debug
 	debugInterfaceCtrl := h.ReadMSR(msrIA32DebugInterface)
-
+	if len(debugInterfaceCtrl) == 0 {
+		return &debugMSR, fmt.Errorf("Received nothing reading debug interface control MSR")
+	}
 	debugMSR.Enabled = (debugInterfaceCtrl[0]>>0)&1 != 0
 	debugMSR.Locked = (debugInterfaceCtrl[0]>>30)&1 != 0
 	debugMSR.PCHStrap = (debugInterfaceCtrl[0]>>31)&1 != 0

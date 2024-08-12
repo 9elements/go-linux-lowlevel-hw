@@ -7,13 +7,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 
-	tpm1 "github.com/google/go-tpm/tpm"
 	tpm2 "github.com/google/go-tpm/legacy/tpm2"
+	tpm1 "github.com/google/go-tpm/tpm"
 	tpmutil "github.com/google/go-tpm/tpmutil"
 )
 
@@ -21,7 +20,6 @@ import (
 type TCGVendorID uint32
 
 func (id TCGVendorID) String() string {
-
 	s, ok := vendors[id]
 	if !ok {
 		return fmt.Sprintf("unknown TPM vendor (%d)", id)
@@ -161,7 +159,7 @@ const (
 func probeSystemTPMs() ([]probedTPM, error) {
 	var tpms []probedTPM
 
-	tpmDevs, err := ioutil.ReadDir(tpmRoot)
+	tpmDevs, err := os.ReadDir(tpmRoot)
 	if os.IsNotExist(err) {
 		return nil, nil
 	} else if err != nil {
@@ -210,7 +208,7 @@ func newTPM(pTPM probedTPM) (*TPM, error) {
 		// If the TPM has a kernel-provided resource manager, we should
 		// use that instead of communicating directly.
 		devPath := filepath.Join("/dev", filepath.Base(pTPM.Path))
-		f, err := ioutil.ReadDir(filepath.Join(pTPM.Path, "device", "tpmrm"))
+		f, err := os.ReadDir(filepath.Join(pTPM.Path, "device", "tpmrm"))
 		if err != nil {
 			if !os.IsNotExist(err) {
 				return nil, err
@@ -237,11 +235,11 @@ func newTPM(pTPM probedTPM) (*TPM, error) {
 // MeasurementLog reads the TCPA eventlog in binary format
 // from the Linux kernel
 func (t *TPM) MeasurementLog() ([]byte, error) {
-	return ioutil.ReadFile("/sys/kernel/security/tpm0/binary_bios_measurements")
+	return os.ReadFile("/sys/kernel/security/tpm0/binary_bios_measurements")
 }
 
 func nvRead12(rwc io.ReadWriteCloser, index, offset, len uint32, auth string) ([]byte, error) {
-	var ownAuth [20]byte //owner well known
+	var ownAuth [20]byte // owner well known
 	if auth != "" {
 		ownAuth = sha1.Sum([]byte(auth))
 	}
@@ -274,7 +272,6 @@ func nvRead20(rwc io.ReadWriteCloser, index, authHandle tpmutil.Handle, password
 }
 
 func readTPM12Information(rwc io.ReadWriter) (TPMInfo, error) {
-
 	manufacturerRaw, err := tpm1.GetManufacturer(rwc)
 	if err != nil {
 		return TPMInfo{}, err

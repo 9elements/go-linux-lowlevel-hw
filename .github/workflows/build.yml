@@ -1,0 +1,80 @@
+name: Integration Test
+
+on:
+  push:
+    branches:
+      - '**'
+    tags:
+      - '**'
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.22
+
+      - name: Download Go modules
+        run: go mod download
+
+      - name: Verify Go modules
+        run: go mod verify
+
+      - name: Run tests
+        run: go test ./pkg/hwapi/
+
+      - name: Build binary
+        run: go build -ldflags "-X main.gitcommit=${{ github.sha }} -X main.gittag=${{ github.ref_name }}" -o test_pci_walk cmd/test_pci_walk/main.go
+
+      - name: Compile tests
+        run: go test -c ./pkg/...
+
+      - name: Create output directory
+        run: mkdir -p out
+
+      - name: Copy test binary to output
+        run: cp hwapi.test out/
+
+      - name: Upload output to workspace
+        uses: actions/upload-artifact@v4
+        with:
+          name: hwapi-test
+          path: out/hwapi.test
+
+  test_in_qemu:
+    runs-on: ubuntu-latest
+    needs: [build]
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: hwapi-test
+          path: /tmp/out
+
+      - name: Set up QEMU environment
+        run: |
+          docker pull 9elements/qemu-linux-runtime
+          docker run -d --name qemu-runtime 9elements/qemu-linux-runtime tail -f /dev/null
+
+      - name: Copy test binary to QEMU container
+        run: docker cp /tmp/out/hwapi.test qemu-runtime:/repo/scripts/hwapi.test
+
+      - name: Create test script
+        run: |
+          echo 'RUN_IN_QEMU=TRUE ./hwapi.test -test.v' > runtest.sh
+          chmod +x runtest.sh
+          docker cp runtest.sh qemu-runtime:/repo/scripts/runtest.sh
+
+      - name: Run tests in QEMU
+        run: docker exec -e TERM=xterm-256color qemu-runtime /repo/entrypoint.sh
+
+      - name: Clean up
+        run: docker stop qemu-runtime && docker rm qemu-runtime

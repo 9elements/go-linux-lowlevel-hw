@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	tpm1 "github.com/google/go-tpm/tpm"
-	tpm2 "github.com/google/go-tpm/tpm2"
+	tpm2 "github.com/google/go-tpm/legacy/tpm2"
 )
 
 const (

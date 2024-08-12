@@ -2,15 +2,13 @@ package hwapi
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
 )
 
-//iterateOverE820Ranges iterates over all e820 entries and invokes the callback for every matching type
+// iterateOverE820Ranges iterates over all e820 entries and invokes the callback for every matching type
 func (h HwAPI) IterateOverE820Ranges(target string, callback func(start uint64, end uint64) bool) (bool, error) {
-
 	dir, err := os.Open("/sys/firmware/memmap")
 	if err != nil {
 		return false, fmt.Errorf("cannot access e820 table: %s", err)
@@ -25,7 +23,7 @@ func (h HwAPI) IterateOverE820Ranges(target string, callback func(start uint64, 
 		if subdir.IsDir() {
 
 			path := fmt.Sprintf("/sys/firmware/memmap/%s/type", subdir.Name())
-			buf, err := ioutil.ReadFile(path)
+			buf, err := os.ReadFile(path)
 			if err != nil {
 				continue
 			}
@@ -76,7 +74,7 @@ func UsableMemoryBelow4G(l LowLevelHardwareInterfaces) (size uint64, err error) 
 	return
 }
 
-//IsReservedInE820 reads the e820 table exported via /sys/firmware/memmap and checks whether
+// IsReservedInE820 reads the e820 table exported via /sys/firmware/memmap and checks whether
 // the range [start; end] is marked as reserved. Returns true if it is reserved,
 // false if not.
 func IsReservedInE820(l LowLevelHardwareInterfaces, start uint64, end uint64) (bool, error) {
@@ -97,7 +95,7 @@ func IsReservedInE820(l LowLevelHardwareInterfaces, start uint64, end uint64) (b
 }
 
 func readHexInteger(path string) (uint64, error) {
-	buf, err := ioutil.ReadFile(path)
+	buf, err := os.ReadFile(path)
 	if err != nil {
 		return 0, err
 	}

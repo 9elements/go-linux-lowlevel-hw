@@ -4,13 +4,12 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"unsafe"
 )
 
-//VTdRegisters represents the IOMMIO space
+// VTdRegisters represents the IOMMIO space
 type VTdRegisters struct {
 	Version                                 uint32 // Architecture version supported by the implementation.
 	Reserved1                               uint32 // Reserved
@@ -111,7 +110,7 @@ func readVTdRegs(l LowLevelHardwareInterfaces) (VTdRegisters, error) {
 
 	for _, subdir := range subdirs {
 		path := fmt.Sprintf("/sys/class/iommu/%s/intel-iommu/address", subdir.Name())
-		addrBuf, err := ioutil.ReadFile(path)
+		addrBuf, err := os.ReadFile(path)
 		if err != nil {
 			continue
 		}
@@ -139,7 +138,7 @@ func readVTdRegs(l LowLevelHardwareInterfaces) (VTdRegisters, error) {
 	return regs, fmt.Errorf("no IOMMU found: /sys/class/iommu/*/intel-iommu/address does not exists or is malformed")
 }
 
-//LookupIOAddress returns the address of the root Tbl
+// LookupIOAddress returns the address of the root Tbl
 func (h HwAPI) LookupIOAddress(addr uint64, regs VTdRegisters) ([]uint64, error) {
 	rootTblAddr := regs.RootTableAddress & 0xffffffffffff000
 	ttm := (regs.RootTableAddress >> 10) & 3

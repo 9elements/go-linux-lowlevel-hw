@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
@@ -21,7 +20,7 @@ const (
 	ebdaTop     = 0xa0000
 )
 
-//ACPIRsdpRev1 as defined in ACPI Spec 1
+// ACPIRsdpRev1 as defined in ACPI Spec 1
 type ACPIRsdpRev1 struct {
 	Signature [8]uint8
 	Checksum  uint8
@@ -30,7 +29,7 @@ type ACPIRsdpRev1 struct {
 	RSDTPtr   uint32
 }
 
-//ACPIRsdp as defined in ACPI Spec 6.2 "5.2.5.3 Root System Description Pointer (RSDP) Structure"
+// ACPIRsdp as defined in ACPI Spec 6.2 "5.2.5.3 Root System Description Pointer (RSDP) Structure"
 type ACPIRsdp struct {
 	ACPIRsdpRev1
 
@@ -52,20 +51,20 @@ type acpiHeader struct {
 	CreatorRevision uint32
 }
 
-//ACPIRsdt as defined in ACPI Spec 6.2 "5.2.7 Root System Description Table (RSDT)"
+// ACPIRsdt as defined in ACPI Spec 6.2 "5.2.7 Root System Description Table (RSDT)"
 type acpiRsdt struct {
 	acpiHeader
-	//Entry           []uint32 count depend on Length field
+	// Entry           []uint32 count depend on Length field
 }
 
-//ACPIXsdt as defined in ACPI Spec 6.2 "5.2.8 Extended System Description Table (XSDT)"
+// ACPIXsdt as defined in ACPI Spec 6.2 "5.2.8 Extended System Description Table (XSDT)"
 type acpiXsdt struct {
 	acpiHeader
-	//Entry           []uint64 count depend on Length field
+	// Entry           []uint64 count depend on Length field
 }
 
 func GetACPITableSysFS(h LowLevelHardwareInterfaces, n string) ([]byte, error) {
-	buf, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", acpiSysfsPath, n))
+	buf, err := os.ReadFile(fmt.Sprintf("%s/%s", acpiSysfsPath, n))
 	if err != nil {
 		return nil, fmt.Errorf("cannot access sysfs path %s: %s", acpiSysfsPath, err)
 	}
@@ -229,7 +228,6 @@ func parseSystab(l LowLevelHardwareInterfaces) ([]byte, ACPIRsdp, error) {
 }
 
 func scanLowMem(l LowLevelHardwareInterfaces) ([]byte, ACPIRsdp, error) {
-
 	var rsdp ACPIRsdp
 
 	buf := make([]byte, binary.Size(rsdp))
@@ -254,7 +252,6 @@ func scanLowMem(l LowLevelHardwareInterfaces) ([]byte, ACPIRsdp, error) {
 }
 
 func scanEBDA(l LowLevelHardwareInterfaces) ([]byte, ACPIRsdp, error) {
-
 	var rsdp ACPIRsdp
 
 	buf := make([]byte, binary.Size(rsdp))
@@ -280,7 +277,6 @@ func scanEBDA(l LowLevelHardwareInterfaces) ([]byte, ACPIRsdp, error) {
 }
 
 func scanReservedMem(l LowLevelHardwareInterfaces) ([]byte, ACPIRsdp, error) {
-
 	var rsdp ACPIRsdp
 
 	buf := make([]byte, binary.Size(rsdp))
@@ -311,14 +307,12 @@ func scanReservedMem(l LowLevelHardwareInterfaces) ([]byte, ACPIRsdp, error) {
 }
 
 func verifyRSDP(buf []byte, rsdp ACPIRsdp) error {
-
 	var old ACPIRsdpRev1
 
 	if rsdp.Revision == 0 {
 		if rsdp.RSDPLen != uint32(binary.Size(old)) {
 			return fmt.Errorf("ACPI RSDP has unexpected length %d", rsdp.RSDPLen)
 		}
-
 	}
 	/* Validate first checksum */
 	chksum := byte(0)
@@ -353,7 +347,6 @@ func verifyRSDP(buf []byte, rsdp ACPIRsdp) error {
 }
 
 func getACPITableDevMemRSDP(l LowLevelHardwareInterfaces) ([]byte, ACPIRsdp, error) {
-
 	var rsdp ACPIRsdp
 
 	if string(backupRSDP.Signature[:]) == "RSD PTR " {
@@ -475,7 +468,7 @@ func GetACPITableDevMem(h LowLevelHardwareInterfaces, n string) ([]byte, error) 
 	}
 
 	for k, v := range acpitables {
-		if v == n { //FIXME: Handle duplicated entries like SSDT
+		if v == n { // FIXME: Handle duplicated entries like SSDT
 			var header acpiHeader
 
 			err := h.ReadPhysBuf(int64(k), buf)
@@ -498,7 +491,7 @@ func GetACPITableDevMem(h LowLevelHardwareInterfaces, n string) ([]byte, error) 
 	return nil, fmt.Errorf("ACPI table not found")
 }
 
-//GetACPITable returns the requested ACPI table, for DSDT use argument "DSDT"
+// GetACPITable returns the requested ACPI table, for DSDT use argument "DSDT"
 func (h HwAPI) GetACPITable(n string) ([]byte, error) {
 	if n == "" || len(n) > 6 {
 		return nil, fmt.Errorf("invalid ACPI name")

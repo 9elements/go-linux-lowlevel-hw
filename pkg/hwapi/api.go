@@ -2,9 +2,8 @@ package hwapi
 
 import "github.com/digitalocean/go-smbios/smbios"
 
-//LowLevelHardwareInterfaces provides methods to access hardware found on modern x86_64 platforms
+// LowLevelHardwareInterfaces provides methods to access hardware found on modern x86_64 platforms
 type LowLevelHardwareInterfaces interface {
-
 	// cpuid.go
 	VersionString() string
 	HasSMX() bool
@@ -14,6 +13,7 @@ type LowLevelHardwareInterfaces interface {
 	CPUSignature() uint32
 	CPUSignatureFull() (uint32, uint32, uint32, uint32)
 	CPULogCount() uint32
+	CPUID(uint32, uint32) (uint32, uint32, uint32, uint32)
 
 	// e820.go
 	IterateOverE820Ranges(target string, callback func(start uint64, end uint64) bool) (bool, error)
@@ -48,10 +48,10 @@ type LowLevelHardwareInterfaces interface {
 	IterateOverSMBIOSTables(n uint8, callback func(s *smbios.Structure) bool) (ret bool, err error)
 }
 
-//HwAPI The context object for low level hardware api
+// HwAPI The context object for low level hardware api
 type HwAPI struct{}
 
-//GetAPI Returns an initialized TxtApi object
+// GetAPI Returns an initialized TxtApi object
 func GetAPI() LowLevelHardwareInterfaces {
 	return HwAPI{}
 }

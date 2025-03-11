@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/fearful-symmetry/gomsr"
-	"github.com/intel-go/cpuid"
+	"github.com/intel/cpuid"
 )
 
 const (

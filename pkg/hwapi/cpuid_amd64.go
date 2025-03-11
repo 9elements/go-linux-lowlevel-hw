@@ -4,7 +4,7 @@
 // Package hwapi provides access to low level hardware
 package hwapi
 
-import "github.com/intel-go/cpuid"
+import "github.com/intel/cpuid"
 
 func cpuidLow(arg1, arg2 uint32) (eax, ebx, ecx, edx uint32) // implemented in cpuidlow_amd64.s
 

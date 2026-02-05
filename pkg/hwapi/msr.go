@@ -23,6 +23,7 @@ func (h HwAPI) ReadMSR(msr int64) []uint64 {
 			break
 		}
 		ret = append(ret, msrData)
+		msrCtx.Close()
 		count++
 	}
 

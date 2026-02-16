@@ -22,7 +22,7 @@ type LowLevelHardwareInterfaces interface {
 	LookupIOAddress(addr uint64, regs VTdRegisters) ([]uint64, error)
 
 	// msr.go
-	ReadMSR(msr int64) []uint64
+	ReadMSR(msr int64) uint64
 
 	// pci.go
 	PCIEnumerateVisibleDevices(cb func(d PCIDevice) (abort bool)) (err error)

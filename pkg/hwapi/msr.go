@@ -1,32 +1,15 @@
 package hwapi
 
 import (
-	"fmt"
-	"os"
-
-	"github.com/fearful-symmetry/gomsr"
+	"github.com/micgor32/go-msr"
 )
 
 // ReadMSR returns the MSR on core #0
-func (h HwAPI) ReadMSR(msr int64) []uint64 {
-	count := 0
-	var ret []uint64
-	for {
-		msrCtx, err := gomsr.MSR(count)
-		if err != nil {
-			fmt.Fprintf(os.Stdout, "ReadMSR - gomsr.MSR context aborted with: %v\n", err)
-			break
-		}
-		msrData, err := msrCtx.Read(msr)
-		if err != nil {
-			fmt.Fprintf(os.Stdout, "ReadMSR - msrCtx.Read aborted with: %v\n", err)
-			break
-		}
-		ret = append(ret, msrData)
-		msrCtx.Close()
-		count++
+func (h HwAPI) ReadMSR(msrAddr int64) uint64 {
+	ret, err := msr.ReadMSR(0, msrAddr)
+	if err != nil {
+		return 0xff
 	}
 
-	fmt.Printf("ReadMSR - gomsr.MSR count: %d, ret len: %d\n", count, len(ret))
 	return ret
 }

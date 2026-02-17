@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/fearful-symmetry/gomsr"
+	"github.com/micgor32/go-msr"
 	"github.com/u-root/cpuid"
 )
 
@@ -28,7 +28,15 @@ func TestReadMSR(t *testing.T) {
 	if os.Getenv("RUN_IN_QEMU") != "TRUE" {
 		t.Skip("Not running on QEMU")
 	}
-	_, err := gomsr.MSR(0)
+	err := msr.MSR(0, func(dev msr.MSRDev) error {
+		// This closure is dummy, and left here only to
+		// satisfy msr.MSR function definition. We can
+		// safelu return nil here, as the function won't
+		// ever reach the point of returning the clousure
+		// if the caller permissions are not sufficient to
+		// read /dev/cpu/n/msr
+		return nil
+	})
 	if err != nil {
 		t.Skip("Not enough permissions to do test")
 	}
@@ -39,40 +47,50 @@ func TestReadMSR(t *testing.T) {
 		{"IA32_PLATFORM_ID", MsrPlatformID},
 	}
 	for _, test := range tests {
-		vals := h.ReadMSR(test.msr)
+		val := h.ReadMSR(test.msr)
 
-		for iterator, value := range vals {
-			if iterator < len(vals) && value != vals[iterator+1] {
-				if value != vals[iterator+1] {
-					t.Errorf("MSR value are not the same for all cores. Core: %d, Value: 0x%x, Previous value: 0x%x", iterator, value, vals[iterator+1])
-				}
-				if value == 0 || vals[iterator+1] == 0xffffffffffffffff {
-					t.Errorf("ReadMSR got unexpected value for MSR %s %v", test.name, vals)
-				}
-			}
+		if val == 0xff {
+			t.Errorf("MSR value for %s is not being read correctly.", test.name)
 		}
+
+		// We can't check the consistency since ReadMSR reads only from core 0,
+		// but we can check whether SOME value other than 0xff is being read.
+		// Left for previous test for reference.
+		// for iterator, value := range vals {
+		// 	if iterator < len(vals) && value != vals[iterator+1] {
+		// 		if value != vals[iterator+1] {
+		// 			t.Errorf("MSR value are not the same for all cores. Core: %d, Value: 0x%x, Previous value: 0x%x", iterator, value, vals[iterator+1])
+		// 		}
+		// 		if value == 0 || vals[iterator+1] == 0xffffffffffffffff {
+		// 			t.Errorf("ReadMSR got unexpected value for MSR %s %v", test.name, vals)
+		// 		}
+		// 	}
+		// }
 	}
 
 }
 
 func TestReadMSRTimeStampCounter(t *testing.T) {
 	h := GetAPI()
-	_, err := gomsr.MSR(0)
+	err := msr.MSR(0, func(dev msr.MSRDev) error {
+		return nil
+	})
+
 	if err != nil {
 		t.Skip("Not enough permissions to do test")
 	}
 	if runtime.GOARCH == "amd64" && cpuid.HasFeature(cpuid.TSC) {
 		timestamp1 := h.ReadMSR(TimeStampCounter)
 
-		if timestamp1[0] == 0 {
+		if timestamp1 == 0 {
 			t.Errorf("ReadMSR got unexpected value for MSR IA32_TIMESTAMP_COUNTER: %v", timestamp1)
 		}
 		time.Sleep(time.Millisecond)
 		timestamp2 := h.ReadMSR(TimeStampCounter)
-		if timestamp2[0] == 0 {
+		if timestamp2 == 0 {
 			t.Errorf("ReadMSR got unexpected value for MSR IA32_TIMESTAMP_COUNTER: %v", timestamp2)
 		}
-		if timestamp1[0] == timestamp2[0] {
+		if timestamp1 == timestamp2 {
 			t.Errorf("Timestamps are equal, but shouldn't be")
 		}
 	}
@@ -80,26 +98,34 @@ func TestReadMSRTimeStampCounter(t *testing.T) {
 
 func TestReadMSREFER(t *testing.T) {
 	h := GetAPI()
-	_, err := gomsr.MSR(0)
+
+	err := msr.MSR(0, func(dev msr.MSRDev) error {
+		return nil
+	})
 	if err != nil {
 		t.Skip("Not enough permissions to do test")
 	}
 	if runtime.GOARCH == "amd64" {
-		vals := h.ReadMSR(Ia32Efer)
-
-		for iterator, value := range vals {
-			if iterator < len(vals) && value != vals[iterator+1] {
-				t.Errorf("MSR value are not the same for all cores. Core: %d, Value: 0x%x, Next value: 0x%x", iterator, value, vals[iterator+1])
-			}
+		val := h.ReadMSR(Ia32Efer)
+		if val == 0xff {
+			t.Error("MSR value is not being read correctly.")
 		}
+
+		// Left for previous test for reference.
+		// for iterator, value := range vals {
+		// 	if iterator < len(vals) && value != vals[iterator+1] {
+		// 		t.Errorf("MSR value are not the same for all cores. Core: %d, Value: 0x%x, Next value: 0x%x", iterator, value, vals[iterator+1])
+		// 	}
+		// }
 	}
 }
 
 func TestSMRR(t *testing.T) {
-
 	h := GetAPI()
 
-	_, err := gomsr.MSR(0)
+	err := msr.MSR(0, func(dev msr.MSRDev) error {
+		return nil
+	})
 	if err != nil {
 		t.Skip("Not enough permissions to do test")
 	}
